@@ -1,6 +1,8 @@
 #ifndef LIBANT_SYSTEM_SIGNAL_H_
 #define LIBANT_SYSTEM_SIGNAL_H_
 
+#include <csignal>
+
 namespace ant {
 
 /**
@@ -8,7 +10,11 @@ namespace ant {
  * @param sigNum signal number
  * @return true on success, false on failure
  */
-bool IgnoreSignal(int sigNum);
+inline bool IgnoreSignal(int sigNum)
+{
+    // The only portable use of signal() is to set a signal's disposition to SIG_DFL or SIG_IGN
+    return signal(sigNum, SIG_IGN) != SIG_ERR;
+}
 
 /**
  * Block all signals for the current thread.
