@@ -4,6 +4,13 @@
 namespace ant {
 
 /**
+ * Ignore the given signal
+ * @param sigNum signal number
+ * @return true on success, false on failure
+ */
+bool IgnoreSignal(int sigNum);
+
+/**
  * Block all signals for the current thread.
  * @return true on success, false on failure
  */

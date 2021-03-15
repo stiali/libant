@@ -4,6 +4,12 @@
 
 namespace ant {
 
+bool IgnoreSignal(int sigNum)
+{
+    // The only portable use of signal() is to set a signal's disposition to SIG_DFL or SIG_IGN
+    return signal(sigNum, SIG_IGN) != SIG_ERR;
+}
+
 bool ThreadBlockAllSignals()
 {
 #ifndef _WIN32
