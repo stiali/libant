@@ -7,7 +7,7 @@
 namespace ant {
 
 template<typename BufferType, typename BufferSizeType, BufferSizeType (BufferType::*BufferCapacityFunc)() const noexcept,
-    void (BufferType::*BufferClearFunc)() noexcept>
+         void (BufferType::*BufferClearFunc)() noexcept>
 class BufferPool : public std::enable_shared_from_this<BufferPool<BufferType, BufferSizeType, BufferCapacityFunc, BufferClearFunc>> {
 public:
     using PoolPtr = std::shared_ptr<BufferPool>;
