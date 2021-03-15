@@ -3,7 +3,10 @@
 
 namespace ant {
 
-// 线程屏蔽所有信号
+/**
+ * Block all signals for the current thread.
+ * @return true on success, false on failure
+ */
 bool ThreadBlockAllSignals();
 
 } // namespace ant
