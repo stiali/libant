@@ -11,8 +11,17 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/../
 )
 
-#add_library(libant library.cpp library.h)
+file(GLOB_RECURSE LIBANT_SOURCE_FILES system/*.cpp)
+
+add_library(ant ${LIBANT_SOURCE_FILES})
 
 if (BUILD_TEST_CASES)
     add_subdirectory(test_cases)
 endif()
+
+set_target_properties(ant
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${BIN_OUTPUT_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${BIN_OUTPUT_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${BIN_OUTPUT_DIR}"
+)
