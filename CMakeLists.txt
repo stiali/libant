@@ -11,7 +11,7 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/../
 )
 
-file(GLOB_RECURSE LIBANT_SOURCE_FILES system/*.cpp)
+file(GLOB_RECURSE LIBANT_SOURCE_FILES system/*.cpp crypto/*.cpp)
 
 add_library(ant ${LIBANT_SOURCE_FILES})
 
