@@ -10,7 +10,7 @@ namespace ant {
  * @param sizeInGB
  * @return true on success, false on failure
  */
-bool SetMaxCoreDumpSize(uint64_t sizeInGB);
+bool SetMaxCoreFileSize(uint64_t sizeInGB);
 
 /**
  * Set maximum number of open file descriptors.

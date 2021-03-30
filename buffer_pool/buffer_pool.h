@@ -6,6 +6,19 @@
 
 namespace ant {
 
+/**
+ * BufferPool is a dynamically growing buffer object pool whose initial status is of size 0.
+ * It limits only the total size of pooled objects, but not the maximum memory usage.
+ * Whenever a buffer object is acquired via this BufferPool, it's returned from the pool,
+ * or newly created from memory if the pool is empty.
+ * Whenever a buffer object is no longer needed, it's automatically returned to the pool within size limit,
+ * or freed otherwise.
+ *
+ * @tparam BufferType type of the buffer object to be pooled, eg: std::string
+ * @tparam BufferSizeType size type of the buffer, eg: std::string::size_type
+ * @tparam BufferCapacityFunc member function to get the capacity of a buffer object in bytes, eg: &std::string::capacity
+ * @tparam BufferClearFunc member function to clear the contents of a buffer object, but retain its underlying capacity, eg: &std::string::clear
+ */
 template<typename BufferType, typename BufferSizeType, BufferSizeType (BufferType::*BufferCapacityFunc)() const noexcept,
          void (BufferType::*BufferClearFunc)() noexcept>
 class BufferPool : public std::enable_shared_from_this<BufferPool<BufferType, BufferSizeType, BufferCapacityFunc, BufferClearFunc>> {
@@ -14,6 +27,12 @@ public:
     using BufferPtr = std::shared_ptr<BufferType>;
 
 public:
+    /**
+     * CreateBufferPool is the only way to create a BufferPool object.
+     *
+     * @param maxPooledByteSize Limit the total size of pooled objects.
+     * @return a newly created BufferPool object
+     */
     static PoolPtr CreateBufferPool(uint64_t maxPooledByteSize)
     {
         return PoolPtr(new BufferPool(maxPooledByteSize));
@@ -26,6 +45,13 @@ public:
         }
     }
 
+    /**
+     * GetBuffer returns a buffer object from the pool, or newly created from memory if the pool is empty.
+     * Whenever a buffer object is no longer needed, it's automatically returned to the pool within size limit,
+     * or freed otherwise.
+     *
+     * @return a buffer object from the pool, or newly created from memory if the pool is empty
+     */
     BufferPtr GetBuffer()
     {
         BufferType* buf;

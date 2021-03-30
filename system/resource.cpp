@@ -4,8 +4,7 @@
 
 namespace ant {
 
-// 设置core文件最大允许大小
-bool SetMaxCoreSize(uint64_t sizeInGB)
+bool SetMaxCoreFileSize(uint64_t sizeInGB)
 {
 #ifndef _WIN32
     rlimit rlim;
@@ -17,13 +16,11 @@ bool SetMaxCoreSize(uint64_t sizeInGB)
 #endif // !_WIN32
 }
 
-// 设置最大允许打开文件数
 bool SetMaxOpenFiles(uint64_t maxFileNum)
 {
 #ifndef _WIN32
     rlimit rlim;
-    /* max allowed open files */
-    rlim.rlim_cur = maxFileNum;
+    rlim.rlim_cur = maxFileNum; // max allowed open files
     rlim.rlim_max = maxFileNum;
     return setrlimit(RLIMIT_NOFILE, &rlim) == 0;
 #else

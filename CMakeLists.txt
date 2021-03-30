@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.16)
 project(libant)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -11,7 +11,7 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/../
 )
 
-file(GLOB_RECURSE LIBANT_SOURCE_FILES system/*.cpp)
+file(GLOB_RECURSE LIBANT_SOURCE_FILES system/*.cpp crypto/*.cpp)
 
 add_library(ant ${LIBANT_SOURCE_FILES})
 

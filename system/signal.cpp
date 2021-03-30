@@ -1,5 +1,3 @@
-#include <csignal>
-
 #include "signal.h"
 
 namespace ant {
