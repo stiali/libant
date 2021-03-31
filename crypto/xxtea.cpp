@@ -5,7 +5,7 @@ namespace ant {
 #define DELTA 0x9e3779b9
 #define MX (((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4))) ^ ((sum ^ y) + (key_[(p & 3) ^ e] ^ z))
 
-void XXTea::encrypt(uint32_t* data, uint32_t len)
+void XXTeaCipher::encrypt(uint32_t* data, uint32_t len)
 {
     uint32_t n = len - 1;
     if (n >= 1) {
@@ -25,7 +25,7 @@ void XXTea::encrypt(uint32_t* data, uint32_t len)
     }
 }
 
-void XXTea::decrypt(uint32_t* data, uint32_t len)
+void XXTeaCipher::decrypt(uint32_t* data, uint32_t len)
 {
     uint32_t n = len - 1;
     if (n >= 1) {

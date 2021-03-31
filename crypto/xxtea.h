@@ -9,24 +9,24 @@ namespace ant {
 /**
  * Corrected Block TEA
  */
-class XXTea {
+class XXTeaCipher {
 public:
     /**
-     * Construct an XXTea object with the given key.
+     * Construct an XXTeaCipher object with the given key.
      *
      * @param key
      */
-    XXTea(uint32_t (&key)[4])
+    XXTeaCipher(uint32_t (&key)[4])
     {
         memcpy(key_, key, kKeySize);
     }
 
     /**
-     * Construct an XXTea object with the given key.
+     * Construct an XXTeaCipher object with the given key.
      *
      * @param key must not exceed 16 bytes
      */
-    XXTea(const std::string& key)
+    XXTeaCipher(const std::string& key)
     {
         if (key.size() < kKeySize) {
             memcpy(key_, key.data(), key.size());
