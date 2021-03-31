@@ -58,48 +58,58 @@ static void chacha_core(uint8_t output[64], const uint32_t input[16])
     }
 }
 
-void ChaCha20(uint8_t* out, const uint8_t* in, size_t inLen, const uint8_t key[32], const uint8_t nonce[12], uint32_t counter)
+//=========================================================================
+// ChaCha20Cipher Public Methods
+//=========================================================================
+
+ChaCha20Cipher::ChaCha20Cipher(const uint8_t key[32], const uint8_t nonce[12], uint32_t counter)
+    : counter_(counter)
 {
-    uint32_t input[16];
+    input_[0] = U8TO32_LITTLE(sigma + 0);
+    input_[1] = U8TO32_LITTLE(sigma + 4);
+    input_[2] = U8TO32_LITTLE(sigma + 8);
+    input_[3] = U8TO32_LITTLE(sigma + 12);
+
+    input_[4] = U8TO32_LITTLE(key + 0);
+    input_[5] = U8TO32_LITTLE(key + 4);
+    input_[6] = U8TO32_LITTLE(key + 8);
+    input_[7] = U8TO32_LITTLE(key + 12);
+
+    input_[8] = U8TO32_LITTLE(key + 16);
+    input_[9] = U8TO32_LITTLE(key + 20);
+    input_[10] = U8TO32_LITTLE(key + 24);
+    input_[11] = U8TO32_LITTLE(key + 28);
+
+    input_[13] = U8TO32_LITTLE(nonce + 0);
+    input_[14] = U8TO32_LITTLE(nonce + 4);
+    input_[15] = U8TO32_LITTLE(nonce + 8);
+}
+
+void ChaCha20Cipher::Encrypt(void* dst, const void* src, size_t len)
+{
+    input_[12] = counter_;
+
+    auto out = reinterpret_cast<uint8_t*>(dst);
+    auto in = reinterpret_cast<const uint8_t*>(src);
     uint8_t buf[64];
     size_t todo, i;
 
-    input[0] = U8TO32_LITTLE(sigma + 0);
-    input[1] = U8TO32_LITTLE(sigma + 4);
-    input[2] = U8TO32_LITTLE(sigma + 8);
-    input[3] = U8TO32_LITTLE(sigma + 12);
-
-    input[4] = U8TO32_LITTLE(key + 0);
-    input[5] = U8TO32_LITTLE(key + 4);
-    input[6] = U8TO32_LITTLE(key + 8);
-    input[7] = U8TO32_LITTLE(key + 12);
-
-    input[8] = U8TO32_LITTLE(key + 16);
-    input[9] = U8TO32_LITTLE(key + 20);
-    input[10] = U8TO32_LITTLE(key + 24);
-    input[11] = U8TO32_LITTLE(key + 28);
-
-    input[12] = counter;
-    input[13] = U8TO32_LITTLE(nonce + 0);
-    input[14] = U8TO32_LITTLE(nonce + 4);
-    input[15] = U8TO32_LITTLE(nonce + 8);
-
-    while (inLen > 0) {
+    while (len > 0) {
         todo = sizeof(buf);
-        if (inLen < todo) {
-            todo = inLen;
+        if (len < todo) {
+            todo = len;
         }
 
-        chacha_core(buf, input);
+        chacha_core(buf, input_);
         for (i = 0; i < todo; i++) {
             out[i] = in[i] ^ buf[i];
         }
 
         out += todo;
         in += todo;
-        inLen -= todo;
+        len -= todo;
 
-        input[12]++;
+        ++input_[12];
     }
 }
 

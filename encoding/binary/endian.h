@@ -107,6 +107,6 @@ inline uint64_t HostToBigEndian(uint64_t v)
 #endif
 }
 
-}
+} // namespace ant
 
 #endif //LIBANT_ENCODING_BINARY_ENDIAN_H_

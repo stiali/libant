@@ -8,6 +8,8 @@ function(TEST_FUNCTION project_name)
     endif (UNIX AND (NOT APPLE))
 
     add_executable(${project_name} ${TEST_SRC})
+    target_link_libraries(${project_name}
+            ant)
 
     set_target_properties(${project_name} PROPERTIES OUTPUT_NAME_DEBUG "${project_name}_d")
     set_target_properties(${project_name} PROPERTIES

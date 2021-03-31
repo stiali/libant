@@ -3,20 +3,65 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 namespace ant {
+
+/**
+ * ChaCha20 algorithm as described in RFC-7539
+ */
+class ChaCha20Cipher {
+public:
+    /**
+     * Construct a ChaCha20 stream cipher as described in RFC-7539 with the given key, nonce and counter
+     *
+     * @param key pointer to an array of 32 bytes.
+     * @param nonce pointer to an array of 12 bytes.
+     * @param counter
+     */
+    ChaCha20Cipher(const uint8_t key[32], const uint8_t nonce[12], uint32_t counter);
+
+    /**
+     * Encrypt src into dst. dst could be the same address as src, in this case, it's encrypted inplace.
+     *
+     * @param dst could be the same address as `src`. If not, length must be the same as `src`.
+     * @param src data to be encrypted.
+     * @param len length of the data to be encrypted.
+     */
+    void Encrypt(void* dst, const void* src, size_t len);
+
+    /**
+     * Decrypt src into dst. dst could be the same address as src, in this case, it's decrypted inplace.
+     *
+     * @param dst could be the same address as `src`. If not, length must be the same as `src`.
+     * @param src data to be encrypted.
+     * @param len length of the data to be encrypted.
+     */
+    void Decrypt(void* dst, const void* src, size_t len)
+    {
+        Encrypt(dst, src, len);
+    }
+
+private:
+    const uint32_t counter_;
+    uint32_t input_[16];
+};
 
 /**
  * ChaCha20 algorithm as described in RFC-7539
  *
  * @param out could be the same address as `in`. If not, length must be the same as `in`.
  * @param in data to be encrypted.
- * @param inLen length of the data to be encrypted.
+ * @param len length of the data to be encrypted.
  * @param key pointer to an array of 32 bytes.
  * @param nonce pointer to an array of 12 bytes.
  * @param counter
  */
-void ChaCha20(uint8_t* out, const uint8_t* in, size_t inLen, const uint8_t key[32], const uint8_t nonce[12], uint32_t counter);
+inline void ChaCha20(uint8_t* out, const uint8_t* in, size_t len, const uint8_t key[32], const uint8_t nonce[12], uint32_t counter)
+{
+    ChaCha20Cipher cc20(key, nonce, counter);
+    cc20.Encrypt(out, in, len);
+}
 
 } // namespace ant
 
