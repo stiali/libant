@@ -1,4 +1,6 @@
+#ifndef _WIN32
 #include <sys/resource.h>
+#endif
 
 #include "resource.h"
 

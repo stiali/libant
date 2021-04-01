@@ -1,8 +1,10 @@
+#ifndef _WIN32
 #include <csignal>
 #include <cstdlib>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#endif
 
 #include "daemon.h"
 
