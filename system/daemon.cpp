@@ -1,3 +1,9 @@
+#include <csignal>
+#include <cstdlib>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
 #include "daemon.h"
 
 namespace ant {
@@ -62,14 +68,12 @@ bool Daemonize(bool noChgDir, bool noClose)
 
     if (!noClose) {
         // Redirects standard input, standard output and standard error to /dev/null.
-        close(STDIN_FILENO);
-        close(STDOUT_FILENO);
-        close(STDERR_FILENO);
         auto fd = open("/dev/null", O_RDWR);
-        auto fdin = dup2(fd, STDIN_FILENO);
-        auto fdout = dup2(fd, STDOUT_FILENO);
-        auto fderr = dup2(fd, STDERR_FILENO);
-        if (fdin != STDIN_FILENO || fdout != STDOUT_FILENO || fderr != STDERR_FILENO) {
+        auto fdIn = dup2(fd, STDIN_FILENO);
+        auto fdOut = dup2(fd, STDOUT_FILENO);
+        auto fdErr = dup2(fd, STDERR_FILENO);
+        close(fd);
+        if (fdIn != STDIN_FILENO || fdOut != STDOUT_FILENO || fdErr != STDERR_FILENO) {
             return false;
         }
     }
