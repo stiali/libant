@@ -4,6 +4,7 @@
 #include <cassert>
 #include <climits>
 #include <cstddef>
+#include <type_traits>
 
 namespace ant::bits {
 
@@ -32,6 +33,7 @@ static uint64_t bit64_not_table[64] = {~(1ull),       ~(1ull << 1),  ~(1ull << 2
 template<typename T, size_t N>
 void SetOn(T (&arr)[N], size_t pos)
 {
+    static_assert(!std::is_pointer<T>::value, "pointer type not supported");
     assert((pos > 0) && (pos <= sizeof(arr) * CHAR_BIT));
     pos -= 1;
     size_t i = pos / (sizeof(T) * CHAR_BIT);
@@ -47,6 +49,7 @@ void SetOn(T (&arr)[N], size_t pos)
 template<typename T, size_t N>
 void SetOff(T (&arr)[N], size_t pos)
 {
+    static_assert(!std::is_pointer<T>::value, "pointer type not supported");
     assert((pos > 0) && (pos <= sizeof(arr) * CHAR_BIT));
     pos -= 1;
     size_t i = pos / (sizeof(T) * CHAR_BIT);
@@ -63,6 +66,7 @@ void SetOff(T (&arr)[N], size_t pos)
 template<typename T, size_t N>
 bool Test(T (&arr)[N], size_t pos)
 {
+    static_assert(!std::is_pointer<T>::value, "pointer type not supported");
     assert((pos > 0) && (pos <= sizeof(arr) * CHAR_BIT));
     pos -= 1;
     size_t i = pos / (sizeof(T) * CHAR_BIT);
@@ -79,6 +83,7 @@ bool Test(T (&arr)[N], size_t pos)
 template<typename T>
 T SetOn(T val, size_t pos)
 {
+    static_assert(!std::is_pointer<T>::value, "pointer type not supported");
     assert((pos > 0) && (pos <= sizeof(T) * CHAR_BIT));
     return (val | bit64_table[pos - 1]);
 }
@@ -93,6 +98,7 @@ T SetOn(T val, size_t pos)
 template<typename T>
 T SetOff(T val, size_t pos)
 {
+    static_assert(!std::is_pointer<T>::value, "pointer type not supported");
     assert((pos > 0) && (pos <= sizeof(T) * CHAR_BIT));
     return (val & bit64_not_table[pos - 1]);
 }
@@ -107,6 +113,7 @@ T SetOff(T val, size_t pos)
 template<typename T>
 bool Test(T val, size_t pos)
 {
+    static_assert(!std::is_pointer<T>::value, "pointer type not supported");
     assert((pos > 0) && (pos <= sizeof(T) * CHAR_BIT));
     return (val & bit64_table[pos - 1]);
 }
