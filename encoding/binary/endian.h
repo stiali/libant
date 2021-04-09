@@ -107,6 +107,27 @@ inline uint64_t HostToBigEndian(uint64_t v)
 #endif
 }
 
+/**
+ * Check if the system is little endian
+ *
+ * @return true if it is, false otherwise
+ */
+inline bool IsSystemLittleEndian()
+{
+    const uint64_t value = 1;
+    return *reinterpret_cast<const uint8_t*>(&value) == 1;
+}
+
+/**
+ * Check if the system is big endian
+ *
+ * @return true if it is, false otherwise
+ */
+inline bool IsSystemBigEndian()
+{
+    return !IsSystemLittleEndian();
+}
+
 } // namespace ant
 
 #endif //LIBANT_ENCODING_BINARY_ENDIAN_H_
