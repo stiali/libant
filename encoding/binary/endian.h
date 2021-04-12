@@ -20,15 +20,9 @@ enum class Endian {
 };
 
 /**
- * Get system endian
- *
- * @return Endian::LittleEndian or Endian::BigEndian
+ * Endian of this system
  */
-inline Endian GetSystemEndian()
-{
-    const uint64_t value = 1;
-    return *reinterpret_cast<const uint8_t*>(&value) ? Endian::LittleEndian : Endian::BigEndian;
-}
+extern Endian SystemEndian;
 
 inline int8_t BigEndianToHost(int8_t v)
 {
