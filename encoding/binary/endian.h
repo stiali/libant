@@ -36,6 +36,19 @@ constexpr Endian SystemEndian = (__BYTE_ORDER == __LITTLE_ENDIAN) ? Endian::Litt
  */
 extern Endian SystemEndian;
 
+/* Macros for swapping */
+#define ANT_BYTE_SWAP_16(x) ((uint16_t)((((uint16_t)(x)&0xff00U) >> 8) | (((uint16_t)(x)&0x00ffU) << 8)))
+
+#define ANT_BYTE_SWAP_32(x)                                                                                                     \
+    ((uint32_t)((((uint32_t)(x)&0xff000000U) >> 24) | (((uint32_t)(x)&0x00ff0000U) >> 8) | (((uint32_t)(x)&0x0000ff00U) << 8) | \
+                (((uint32_t)(x)&0x000000ffU) << 24)))
+
+#define ANT_BYTE_SWAP_64(x)                                                                                                                                   \
+    ((uint64_t)((((uint64_t)(x)&0xff00000000000000ULL) >> 56) | (((uint64_t)(x)&0x00ff000000000000ULL) >> 40) |                                               \
+                (((uint64_t)(x)&0x0000ff0000000000ULL) >> 24) | (((uint64_t)(x)&0x000000ff00000000ULL) >> 8) | (((uint64_t)(x)&0x00000000ff000000ULL) << 8) | \
+                (((uint64_t)(x)&0x0000000000ff0000ULL) << 24) | (((uint64_t)(x)&0x000000000000ff00ULL) << 40) |                                               \
+                (((uint64_t)(x)&0x00000000000000ffULL) << 56)))
+
 #endif
 
 constexpr int8_t BigEndianToHost(int8_t v)
@@ -148,9 +161,12 @@ inline int16_t LittleEndianToHost(int16_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_16(v);
+        return bswap_16(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_16(v);
+    }
 #endif
     return v;
 }
@@ -159,9 +175,12 @@ inline uint16_t LittleEndianToHost(uint16_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_16(v);
+        return bswap_16(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_16(v);
+    }
 #endif
     return v;
 }
@@ -170,9 +189,12 @@ inline int32_t LittleEndianToHost(int32_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_32(v);
+        return bswap_32(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_32(v);
+    }
 #endif
     return v;
 }
@@ -181,9 +203,12 @@ inline uint32_t LittleEndianToHost(uint32_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_32(v);
+        return bswap_32(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_32(v);
+    }
 #endif
     return v;
 }
@@ -192,9 +217,12 @@ inline int64_t LittleEndianToHost(int64_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_64(v);
+        return bswap_64(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_64(v);
+    }
 #endif
     return v;
 }
@@ -203,9 +231,12 @@ inline uint64_t LittleEndianToHost(uint64_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_64(v);
+        return bswap_64(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_64(v);
+    }
 #endif
     return v;
 }
@@ -224,9 +255,12 @@ inline int16_t HostToLittleEndian(int16_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_16(v);
+        return bswap_16(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_16(v);
+    }
 #endif
     return v;
 }
@@ -235,9 +269,12 @@ inline uint16_t HostToLittleEndian(uint16_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_16(v);
+        return bswap_16(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_16(v);
+    }
 #endif
     return v;
 }
@@ -246,9 +283,12 @@ inline int32_t HostToLittleEndian(int32_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_32(v);
+        return bswap_32(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_32(v);
+    }
 #endif
     return v;
 }
@@ -257,9 +297,12 @@ inline uint32_t HostToLittleEndian(uint32_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_32(v);
+        return bswap_32(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_32(v);
+    }
 #endif
     return v;
 }
@@ -268,9 +311,12 @@ inline int64_t HostToLittleEndian(int64_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_64(v);
+        return bswap_64(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_64(v);
+    }
 #endif
     return v;
 }
@@ -279,14 +325,15 @@ inline uint64_t HostToLittleEndian(uint64_t v)
 {
 #ifdef __linux__
     if constexpr (SystemEndian == Endian::BigEndian) {
-        v = bswap_64(v);
+        return bswap_64(v);
     }
 #else
+    if (SystemEndian == Endian::BigEndian) {
+        return ANT_BYTE_SWAP_64(v);
+    }
 #endif
     return v;
 }
-
-
 
 } // namespace ant
 
