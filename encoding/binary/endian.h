@@ -11,6 +11,25 @@
 
 namespace ant {
 
+/**
+ * Endian type
+ */
+enum class Endian {
+    LittleEndian = 0,
+    BigEndian = 1,
+};
+
+/**
+ * Get system endian
+ *
+ * @return Endian::LittleEndian or Endian::BigEndian
+ */
+inline Endian GetSystemEndian()
+{
+    const uint64_t value = 1;
+    return *reinterpret_cast<const uint8_t*>(&value) ? Endian::LittleEndian : Endian::BigEndian;
+}
+
 inline int8_t BigEndianToHost(int8_t v)
 {
     return v;
@@ -105,27 +124,6 @@ inline uint64_t HostToBigEndian(uint64_t v)
 #else
     return htonll(v);
 #endif
-}
-
-/**
- * Check if the system is little endian
- *
- * @return true if it is, false otherwise
- */
-inline bool IsSystemLittleEndian()
-{
-    const uint64_t value = 1;
-    return *reinterpret_cast<const uint8_t*>(&value) == 1;
-}
-
-/**
- * Check if the system is big endian
- *
- * @return true if it is, false otherwise
- */
-inline bool IsSystemBigEndian()
-{
-    return !IsSystemLittleEndian();
 }
 
 } // namespace ant
