@@ -7,6 +7,9 @@
 #include <winsock2.h>
 #else
 #include <arpa/inet.h>
+#ifdef __linux__
+#include <byteswap.h>
+#endif
 #endif
 
 namespace ant {
@@ -19,17 +22,28 @@ enum class Endian {
     BigEndian = 1,
 };
 
+#ifdef __linux__
+
+/**
+ * Endian of this system
+ */
+constexpr Endian SystemEndian = (__BYTE_ORDER == __LITTLE_ENDIAN) ? Endian::LittleEndian : Endian::BigEndian;
+
+#else
+
 /**
  * Endian of this system
  */
 extern Endian SystemEndian;
 
-inline int8_t BigEndianToHost(int8_t v)
+#endif
+
+constexpr int8_t BigEndianToHost(int8_t v)
 {
     return v;
 }
 
-inline uint8_t BigEndianToHost(uint8_t v)
+constexpr uint8_t BigEndianToHost(uint8_t v)
 {
     return v;
 }
@@ -72,12 +86,12 @@ inline uint64_t BigEndianToHost(uint64_t v)
 #endif
 }
 
-inline int8_t HostToBigEndian(int8_t v)
+constexpr int8_t HostToBigEndian(int8_t v)
 {
     return v;
 }
 
-inline uint8_t HostToBigEndian(uint8_t v)
+constexpr uint8_t HostToBigEndian(uint8_t v)
 {
     return v;
 }
@@ -119,6 +133,160 @@ inline uint64_t HostToBigEndian(uint64_t v)
     return htonll(v);
 #endif
 }
+
+constexpr int8_t LittleEndianToHost(int8_t v)
+{
+    return v;
+}
+
+constexpr uint8_t LittleEndianToHost(uint8_t v)
+{
+    return v;
+}
+
+inline int16_t LittleEndianToHost(int16_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_16(v);
+    }
+#else
+#endif
+    return v;
+}
+
+inline uint16_t LittleEndianToHost(uint16_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_16(v);
+    }
+#else
+#endif
+    return v;
+}
+
+inline int32_t LittleEndianToHost(int32_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_32(v);
+    }
+#else
+#endif
+    return v;
+}
+
+inline uint32_t LittleEndianToHost(uint32_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_32(v);
+    }
+#else
+#endif
+    return v;
+}
+
+inline int64_t LittleEndianToHost(int64_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_64(v);
+    }
+#else
+#endif
+    return v;
+}
+
+inline uint64_t LittleEndianToHost(uint64_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_64(v);
+    }
+#else
+#endif
+    return v;
+}
+
+constexpr int8_t HostToLittleEndian(int8_t v)
+{
+    return v;
+}
+
+constexpr uint8_t HostToLittleEndian(uint8_t v)
+{
+    return v;
+}
+
+inline int16_t HostToLittleEndian(int16_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_16(v);
+    }
+#else
+#endif
+    return v;
+}
+
+inline uint16_t HostToLittleEndian(uint16_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_16(v);
+    }
+#else
+#endif
+    return v;
+}
+
+inline int32_t HostToLittleEndian(int32_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_32(v);
+    }
+#else
+#endif
+    return v;
+}
+
+inline uint32_t HostToLittleEndian(uint32_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_32(v);
+    }
+#else
+#endif
+    return v;
+}
+
+inline int64_t HostToLittleEndian(int64_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_64(v);
+    }
+#else
+#endif
+    return v;
+}
+
+inline uint64_t HostToLittleEndian(uint64_t v)
+{
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::BigEndian) {
+        v = bswap_64(v);
+    }
+#else
+#endif
+    return v;
+}
+
+
 
 } // namespace ant
 
