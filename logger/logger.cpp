@@ -1,9 +1,18 @@
-#include "fmt/chrono.h"
+#include <filesystem>
+
 #include "logger.h"
 
 using namespace std;
 
 namespace ant {
+
+thread_local std::string Logger::thrBuf_;
+
+namespace detail {
+
+std::unique_ptr<Logger> gLogger;
+
+}
 
 //==========================================================================================
 // Logger::Impl Private Methods
@@ -15,7 +24,13 @@ bool Logger::Impl::log(const tm& tmNow, uint32_t microSeconds, const string& con
     if (curFileSize_ >= parent_->logFileMaxSize_ || curDay_ != tmNow.tm_yday || !out_) {
         out_.close();
 
-        auto filename = fmt::format("{}{}.{:%Y%m%d%H%M%S}{:06d}.log", parent_->logPathPrefix_, sLogLevelNames[level_], tmNow, microSeconds);
+        error_code ec;
+        filesystem::create_directories(parent_->logDir_, ec);
+        if (ec) {
+            return false;
+        }
+
+        auto filename = fmt::format("{}.{}.{:%Y%m%d%H%M%S}{:06d}.log", parent_->logPathPrefix_, sLogLevelNames[level_], tmNow, microSeconds);
         out_.open(filename, ofstream::app);
         if (!out_) {
             return false;
