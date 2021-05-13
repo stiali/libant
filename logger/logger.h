@@ -11,8 +11,23 @@
 
 namespace ant {
 
+/**
+ * Logger is a thread-safe logging facility which writes logs with different severity levels to files, console, or both.
+ * Logs with different severity levels are written to different logfiles.
+ * It's recommended to use ant::InitGlobalLogger to create a global Logger object, then use LOG_TRACE/LOG_INFO/LOG_WARN/... to write logs.
+ * You can also create as many Logger objects as desired if in need. \n
+ *
+ * Features:
+ *   \l Auto rotation: It'll create a new logfile whenever day changes or size of the current logfile exceeds the configured size limit.
+ *   \l Log levels: 5 different levels are supported. Logs with different levels are written to different logfiles. By setting the Logger object to a higher log level, lower level logs will be filtered out.
+ *   \l Log-through: Logs with higher severity level will be written to all the logfiles with lower severity level if configured to do so.
+ *   \l Logs are not buffered, they are written to logfiles immediately with fileStream.write(log.c_str(), log.size()).
+ */
 class Logger {
 public:
+    /**
+     * LogLevel is used to exclude logs with lower level.
+     */
     enum LogLevel {
         LogLevelTrace,
         LogLevelInfo,
@@ -23,6 +38,9 @@ public:
         LogLevelCount
     };
 
+    /**
+     * LogDest controls where the logs are written.
+     */
     enum LogDest {
         LogDestNone = 0,                            // Don't write logs.
         LogDestFile = 1,                            // Write logs to files.
@@ -30,16 +48,33 @@ public:
         LogDestBoth = LogDestFile | LogDestConsole, // Write logs both to files and console.
     };
 
+    /**
+     * ControlFlag controls how the logs are written. Use `|`(Or operator) to mix multiple flags.
+     */
     enum ControlFlag {
         ControlFlagLogThrough = 1, // Controls if logs with higher level are written to lower level log files.
         ControlFlagLogDate = 2,    // Controls if a date string formatted as '20201201' is prepended to the logs.
     };
 
+    /**
+     * Cfg contains options for creating a new Logger object.
+     */
     class Cfg {
     public:
         friend class Logger;
 
     public:
+        /**
+         * Construct a Cfg object.
+         *
+         * @param dir Directory to hold the log files. If left empty, current working directory is used. Should you need to create multiple Logger objects, better to associate them with different directories.
+         * @param filenamePrefix Name of a log file is formatted as `filenamePrefix.LogLevel.DateTime.log`.
+         * @param fileMaxSizeInMB Limits the maximum size in MB for a single log file. 0 means unlimited.
+         * @param enableThreadMutex Set it true if you want the Logger object to be thread-safe, false if the Logger object is used single-threaded.
+         * @param level Don't write logs below `level`.
+         * @param dest Where the logs are written.
+         * @param controlFlags How the logs are written.
+         */
         Cfg(const std::string& dir, const std::string& filenamePrefix, uint32_t fileMaxSizeInMB, bool enableThreadMutex = true, LogLevel level = LogLevelInfo,
             LogDest dest = LogDestFile, uint32_t controlFlags = ControlFlagLogThrough)
             : logDir_(dir)
@@ -63,6 +98,11 @@ public:
     };
 
 public:
+    /**
+     * Construct a Logger object.
+     *
+     * @param cfg
+     */
     Logger(const Cfg& cfg)
         : logDir_(cfg.logDir_)
         , logPathPrefix_(!cfg.logDir_.empty() ? cfg.logDir_ + "/" + cfg.logFilenamePrefix_ : cfg.logFilenamePrefix_)
@@ -79,11 +119,19 @@ public:
     {
     }
 
+    /**
+     * Change log level of the Logger object at runtime. Thread-safe.
+     * @param level
+     */
     void SetLogLevel(LogLevel level)
     {
         logLevel_ = level;
     }
 
+    /**
+     * Change log destination of the Logger object at runtime. Thread-safe.
+     * @param dest
+     */
     void SetLogDest(LogDest dest)
     {
         logDest_ = dest;
@@ -95,6 +143,7 @@ public:
      *
      * @tparam S
      * @tparam Args
+     *
      * @param level
      * @param format
      * @param args
@@ -246,8 +295,7 @@ inline void SetGlobalLoggerLogDest(Logger::LogDest dest)
 
 } // namespace ant
 
-#define LOGGER_WRITE(level_, fmt_, ...) \
-    ant::detail::gLogger->Log(level_, FMT_STRING("{}:{}] " fmt_), strrchr("/" __FILE__, '/') + 1, __LINE__, ##__VA_ARGS__)
+#define LOGGER_WRITE(level_, fmt_, ...) ant::detail::gLogger->Log(level_, FMT_STRING("{}:{}] " fmt_), strrchr("/" __FILE__, '/') + 1, __LINE__, ##__VA_ARGS__)
 
 #ifndef DISABLE_LOG_TRACE
 /**
