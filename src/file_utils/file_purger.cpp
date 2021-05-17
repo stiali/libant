@@ -1,9 +1,3 @@
-#include <filesystem>
-
-#ifndef _WIN32
-#include <csignal>
-#endif
-
 #include <libant/system/signal.h>
 #include <libant/file_utils/file_purger.h>
 
@@ -23,7 +17,7 @@ void FilePurger::run()
         rules = rules_;
         rulesMtx_.unlock();
 
-        time_t tNow = time(nullptr);
+        auto tNow = fs::file_time_type::clock::now();
         for (const auto& rule : rules) {
             purgeOldFiles(tNow, rule.first, rule.second);
         }
@@ -32,7 +26,7 @@ void FilePurger::run()
     }
 }
 
-void FilePurger::purgeOldFiles(time_t tNow, const std::string& dir, const PurgingRule& rule)
+void FilePurger::purgeOldFiles(const fs::file_time_type& tNow, const std::string& dir, const PurgingRule& rule)
 {
     fs::path p(dir);
 
@@ -48,9 +42,9 @@ void FilePurger::purgeOldFiles(time_t tNow, const std::string& dir, const Purgin
             continue;
         }
 
-        time_t lastUpdTime = chrono::duration_cast<chrono::seconds>(lastWriteTime.time_since_epoch()).count();
+        time_t elapsed = chrono::duration_cast<chrono::seconds>(tNow - lastWriteTime).count();
         if (fs::is_regular_file(entry, ec)) {
-            if (tNow - lastUpdTime > rule.inactiveTime_) {
+            if (elapsed > rule.inactiveTime_) {
                 fs::remove(entry, ec);
             }
         } else if (fs::is_directory(entry, ec)) {
@@ -58,7 +52,7 @@ void FilePurger::purgeOldFiles(time_t tNow, const std::string& dir, const Purgin
                 purgeOldFiles(tNow, entry.path().string(), rule);
             }
 
-            if (rule.purgeEmptyDirectory_ && tNow - lastUpdTime > rule.inactiveTime_) {
+            if (rule.purgeEmptyDirectory_ && elapsed > rule.inactiveTime_) {
                 fs::remove(entry, ec); // remove a file or an empty directory
             }
         }

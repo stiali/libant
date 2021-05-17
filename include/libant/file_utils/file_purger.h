@@ -2,6 +2,7 @@
 #define LIBANT_FILE_UTILS_FILE_PURGER_H_
 
 #include <condition_variable>
+#include <filesystem>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -102,7 +103,7 @@ public:
 
 private:
     void run();
-    void purgeOldFiles(time_t tNow, const std::string& dir, const PurgingRule& rule);
+    void purgeOldFiles(const std::filesystem::file_time_type& tNow, const std::string& dir, const PurgingRule& rule);
 
 private:
     std::mutex cvMtx_;
