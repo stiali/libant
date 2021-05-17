@@ -22,7 +22,8 @@ void FilePurger::run()
 #endif // !_WIN32
 
     unordered_map<string, PurgingRule> rules;
-    for (;;) {
+    unique_lock<std::mutex> lock(cvMtx_);
+    while (!stop_) {
         rulesMtx_.lock();
         rules = rules_;
         rulesMtx_.unlock();
@@ -32,7 +33,7 @@ void FilePurger::run()
             purgeOldFiles(tNow, rule.first, rule.second);
         }
 
-        this_thread::sleep_for(chrono::seconds(300));
+        cv_.wait_for(lock, chrono::seconds(300));
     }
 }
 

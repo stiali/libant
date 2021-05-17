@@ -1,7 +1,6 @@
 #ifndef LIBANT_FILE_UTILS_FILE_PURGER_H_
 #define LIBANT_FILE_UTILS_FILE_PURGER_H_
 
-#include <atomic> // TODO
 #include <mutex>
 #include <string>
 #include <thread>
@@ -47,14 +46,18 @@ public:
      * Construct a FilePurger object and start a thread to purge old files.
      */
     FilePurger()
-        : stop_(false) // TODO
+        : stop_(false)
         , purgingThread_(&FilePurger::run, this)
     {
     }
 
     ~FilePurger()
     {
-        stop_ = true; // TODO
+        cvMtx_.lock();
+        stop_ = true;
+        cvMtx_.unlock();
+        cv_.notify_one();
+
         purgingThread_.join();
     }
 
@@ -98,7 +101,10 @@ private:
     void purgeOldFiles(time_t tNow, const std::string& dir, const PurgingRule& rule);
 
 private:
-    std::atomic<bool> stop_; // TODO
+    std::mutex cvMtx_;
+    std::condition_variable cv_;
+    bool stop_;
+
     std::thread purgingThread_;
     std::mutex rulesMtx_;
     // <dir, purging rule>
