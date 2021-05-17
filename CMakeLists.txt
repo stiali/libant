@@ -6,7 +6,10 @@ set(BIN_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/bin)
 
 option(BUILD_TEST_CASES "building test cases" OFF)
 
-add_subdirectory(3rdparties)
+# include search dir
+include_directories(
+        ${PROJECT_SOURCE_DIR}/../
+)
 
 file(GLOB_RECURSE LIBANT_SOURCE_FILES src/*.cpp)
 
@@ -16,7 +19,6 @@ if (BUILD_TEST_CASES)
     add_subdirectory(test_cases)
 endif ()
 
-include_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparties/fmt/include)
 target_include_directories(ant PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
