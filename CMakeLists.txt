@@ -16,8 +16,8 @@ if (BUILD_TEST_CASES)
     add_subdirectory(test_cases)
 endif ()
 
+include_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparties/fmt/include)
 target_include_directories(ant PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/3rdparties/fmt/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 set_target_properties(ant
