@@ -47,7 +47,12 @@ void FilePurger::purgeOldFiles(time_t tNow, const std::string& dir, const Purgin
     }
 
     for (const auto& entry : dirIter) {
-        time_t lastUpdTime = chrono::duration_cast<chrono::seconds>(fs::last_write_time(entry).time_since_epoch()).count();
+        auto lastWriteTime = fs::last_write_time(entry, ec);
+        if (ec) {
+            continue;
+        }
+
+        time_t lastUpdTime = chrono::duration_cast<chrono::seconds>(lastWriteTime.time_since_epoch()).count();
         if (fs::is_regular_file(entry, ec)) {
             if (tNow - lastUpdTime > rule.inactiveTime_) {
                 fs::remove(entry, ec);
@@ -57,8 +62,8 @@ void FilePurger::purgeOldFiles(time_t tNow, const std::string& dir, const Purgin
                 purgeOldFiles(tNow, entry.path().string(), rule);
             }
 
-            if (rule.purgeEmptyDirectory_ && tNow - lastUpdTime > rule.inactiveTime_ && fs::is_empty(entry, ec)) {
-                fs::remove(entry, ec);
+            if (rule.purgeEmptyDirectory_ && tNow - lastUpdTime > rule.inactiveTime_) {
+                fs::remove(entry, ec); // remove a file or an empty directory
             }
         }
     }
