@@ -46,10 +46,13 @@ public:
     /**
      * Construct a FilePurger object and start a thread to purge old files.
      */
-    FilePurger()
+    FilePurger(const std::unordered_map<std::string, PurgingRule>* rules = nullptr)
         : stop_(false)
         , purgingThread_(&FilePurger::run, this)
     {
+        if (rules) {
+            rules_ = *rules;
+        }
     }
 
     ~FilePurger()
