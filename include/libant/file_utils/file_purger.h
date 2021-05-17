@@ -1,6 +1,7 @@
 #ifndef LIBANT_FILE_UTILS_FILE_PURGER_H_
 #define LIBANT_FILE_UTILS_FILE_PURGER_H_
 
+#include <condition_variable>
 #include <mutex>
 #include <string>
 #include <thread>

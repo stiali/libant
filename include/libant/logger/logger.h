@@ -111,11 +111,9 @@ public:
         , multiThreaded_(cfg.enableThreadMutex_)
         , logLevel_(cfg.logLevel_)
         , logDest_(cfg.logDest_)
-        , loggers_{{this, LogLevelTrace, cfg.enableThreadMutex_},
-                   {this, LogLevelInfo, cfg.enableThreadMutex_},
-                   {this, LogLevelWarn, cfg.enableThreadMutex_},
-                   {this, LogLevelError, cfg.enableThreadMutex_},
-                   {this, LogLevelFatal, cfg.enableThreadMutex_}}
+        , loggers_{std::make_unique<Impl>(this, LogLevelTrace, cfg.enableThreadMutex_), std::make_unique<Impl>(this, LogLevelInfo, cfg.enableThreadMutex_),
+                   std::make_unique<Impl>(this, LogLevelWarn, cfg.enableThreadMutex_), std::make_unique<Impl>(this, LogLevelError, cfg.enableThreadMutex_),
+                   std::make_unique<Impl>(this, LogLevelFatal, cfg.enableThreadMutex_)}
     {
     }
 
@@ -180,10 +178,10 @@ public:
             auto microSeconds = curTm % 1000000;
             if (controlFlags_ & ControlFlagLogThrough) {
                 for (int lv = level; lv >= lowestLevel; --lv) {
-                    loggers_[lv].Log(tmNow, microSeconds, *buf);
+                    loggers_[lv]->Log(tmNow, microSeconds, *buf);
                 }
             } else {
-                loggers_[level].Log(tmNow, microSeconds, *buf);
+                loggers_[level]->Log(tmNow, microSeconds, *buf);
             }
         }
 
@@ -252,7 +250,7 @@ private:
 
     std::atomic<LogLevel> logLevel_;
     std::atomic<LogDest> logDest_;
-    Impl loggers_[LogLevelCount];
+    std::unique_ptr<Impl> loggers_[LogLevelCount];
     std::string buf_;
     static thread_local std::string thrBuf_;
     static constexpr char levelInitials_[LogLevelCount] = {'T', 'I', 'W', 'E', 'F'};
