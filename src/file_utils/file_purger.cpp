@@ -4,6 +4,7 @@
 #include <csignal>
 #endif
 
+#include <libant/system/signal.h>
 #include <libant/file_utils/file_purger.h>
 
 using namespace std;
@@ -13,13 +14,7 @@ namespace ant {
 
 void FilePurger::run()
 {
-#ifndef _WIN32
-    // block all signals
-    sigset_t mask;
-    if (sigfillset(&mask) == 0) {
-        pthread_sigmask(SIG_BLOCK, &mask, nullptr);
-    }
-#endif // !_WIN32
+    ThreadBlockAllSignals();
 
     unordered_map<string, PurgingRule> rules;
     unique_lock<std::mutex> lock(cvMtx_);
