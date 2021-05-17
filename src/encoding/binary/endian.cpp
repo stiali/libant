@@ -1,4 +1,4 @@
-#include "endian.h"
+#include <libant/encoding/binary/endian.h>
 
 namespace ant {
 

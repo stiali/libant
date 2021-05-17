@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #endif
 
-#include "daemon.h"
+#include <libant/system/daemon.h>
 
 namespace ant {
 

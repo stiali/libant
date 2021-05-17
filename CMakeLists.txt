@@ -11,13 +11,16 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/../
 )
 
-file(GLOB_RECURSE LIBANT_SOURCE_FILES system/*.cpp crypto/*.cpp encoding/*.cpp logger/*.cpp file_utils/*.cpp)
+file(GLOB_RECURSE LIBANT_SOURCE_FILES src/*.cpp)
 
 add_library(ant ${LIBANT_SOURCE_FILES})
 
 if (BUILD_TEST_CASES)
     add_subdirectory(test_cases)
 endif ()
+
+target_include_directories(ant PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 set_target_properties(ant
         PROPERTIES

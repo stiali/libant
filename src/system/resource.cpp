@@ -2,7 +2,7 @@
 #include <sys/resource.h>
 #endif
 
-#include "resource.h"
+#include <libant/system/resource.h>
 
 namespace ant {
 
