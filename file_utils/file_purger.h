@@ -30,6 +30,9 @@ public:
          * @param purgeEmptyDir Whether to purge empty directory.
          */
         PurgingRule(time_t inactiveTime, bool recursive = true, bool purgeEmptyDir = true)
+            : inactiveTime_(inactiveTime)
+            , purgeRecursively_(recursive)
+            , purgeEmptyDirectory_(purgeEmptyDir)
         {
         }
 
