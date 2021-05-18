@@ -103,21 +103,7 @@ public:
      *
      * @param cfg
      */
-    Logger(const Cfg& cfg)
-        : logDir_(cfg.logDir_)
-        , logPathPrefix_(!cfg.logDir_.empty() ? cfg.logDir_ + "/" + cfg.logFilenamePrefix_ : cfg.logFilenamePrefix_)
-        , logFileMaxSize_(cfg.logFileMaxSize_ ? cfg.logFileMaxSize_ * 1024 * 1024 : 0xFFFFFFFFFF000000)
-        , controlFlags_(cfg.controlFlags_)
-        , multiThreaded_(cfg.enableThreadMutex_)
-        , logLevel_(cfg.logLevel_)
-        , logDest_(cfg.logDest_)
-        , loggers_{std::make_unique<Impl>(this, cfg.logFilenamePrefix_, LogLevelTrace, cfg.enableThreadMutex_),
-                   std::make_unique<Impl>(this, cfg.logFilenamePrefix_, LogLevelInfo, cfg.enableThreadMutex_),
-                   std::make_unique<Impl>(this, cfg.logFilenamePrefix_, LogLevelWarn, cfg.enableThreadMutex_),
-                   std::make_unique<Impl>(this, cfg.logFilenamePrefix_, LogLevelError, cfg.enableThreadMutex_),
-                   std::make_unique<Impl>(this, cfg.logFilenamePrefix_, LogLevelFatal, cfg.enableThreadMutex_)}
-    {
-    }
+    Logger(const Cfg& cfg);
 
     /**
      * Change log level of the Logger object at runtime. Thread-safe.
@@ -291,7 +277,11 @@ inline void SetGlobalLoggerLogDest(Logger::LogDest dest)
 
 } // namespace ant
 
+#if defined(_WIN64) || defined(_WIN32)
+#define LOGGER_WRITE(level_, fmt_, ...) ant::detail::gLogger->Log(level_, FMT_STRING("{}:{}] " fmt_), strrchr("\\" __FILE__, '\\') + 1, __LINE__, ##__VA_ARGS__)
+#else
 #define LOGGER_WRITE(level_, fmt_, ...) ant::detail::gLogger->Log(level_, FMT_STRING("{}:{}] " fmt_), strrchr("/" __FILE__, '/') + 1, __LINE__, ##__VA_ARGS__)
+#endif
 
 #ifndef DISABLE_LOG_TRACE
 /**
