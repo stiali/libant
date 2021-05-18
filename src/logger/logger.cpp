@@ -19,15 +19,25 @@ std::unique_ptr<Logger> gLogger;
 //==========================================================================================
 static const string sLogLevelNames[Logger::LogLevelCount] = {"TRACE", "INFO", "WARN", "ERROR", "FATAL"};
 
+Logger::Impl::Impl(const Logger* parent, const std::string& filenamePrefix, LogLevel level, bool enableMutex)
+    : parent_(parent)
+    , level_(level)
+    , enableMutex_(enableMutex)
+    , symlink_((!parent_->logDir_.empty() ? parent_->logDir_ + "/" : "") + sLogLevelNames[level] + "." + filenamePrefix + ".log")
+{
+}
+
 bool Logger::Impl::log(const tm& tmNow, uint32_t microSeconds, const string& content)
 {
     if (curFileSize_ >= parent_->logFileMaxSize_ || curDay_ != tmNow.tm_yday || !out_) {
         out_.close();
 
         error_code ec;
-        filesystem::create_directories(parent_->logDir_, ec);
-        if (ec) {
-            return false;
+        if (!parent_->logDir_.empty()) {
+            filesystem::create_directories(parent_->logDir_, ec);
+            if (ec) {
+                return false;
+            }
         }
 
         auto filename = fmt::format("{}.{}.{:%Y%m%d%H%M%S}{:06d}.log", parent_->logPathPrefix_, sLogLevelNames[level_], tmNow, microSeconds);
@@ -35,6 +45,9 @@ bool Logger::Impl::log(const tm& tmNow, uint32_t microSeconds, const string& con
         if (!out_) {
             return false;
         }
+
+        filesystem::remove(symlink_, ec);
+        filesystem::create_symlink(filesystem::path(filename).filename(), symlink_, ec);
 
         curDay_ = tmNow.tm_yday;
         curFileSize_ = 0;

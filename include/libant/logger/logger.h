@@ -111,9 +111,11 @@ public:
         , multiThreaded_(cfg.enableThreadMutex_)
         , logLevel_(cfg.logLevel_)
         , logDest_(cfg.logDest_)
-        , loggers_{std::make_unique<Impl>(this, LogLevelTrace, cfg.enableThreadMutex_), std::make_unique<Impl>(this, LogLevelInfo, cfg.enableThreadMutex_),
-                   std::make_unique<Impl>(this, LogLevelWarn, cfg.enableThreadMutex_), std::make_unique<Impl>(this, LogLevelError, cfg.enableThreadMutex_),
-                   std::make_unique<Impl>(this, LogLevelFatal, cfg.enableThreadMutex_)}
+        , loggers_{std::make_unique<Impl>(this, cfg.logFilenamePrefix_, LogLevelTrace, cfg.enableThreadMutex_),
+                   std::make_unique<Impl>(this, cfg.logFilenamePrefix_, LogLevelInfo, cfg.enableThreadMutex_),
+                   std::make_unique<Impl>(this, cfg.logFilenamePrefix_, LogLevelWarn, cfg.enableThreadMutex_),
+                   std::make_unique<Impl>(this, cfg.logFilenamePrefix_, LogLevelError, cfg.enableThreadMutex_),
+                   std::make_unique<Impl>(this, cfg.logFilenamePrefix_, LogLevelFatal, cfg.enableThreadMutex_)}
     {
     }
 
@@ -203,12 +205,7 @@ public:
 private:
     class Impl {
     public:
-        Impl(const Logger* parent, LogLevel level, bool enableMutex)
-            : parent_(parent)
-            , level_(level)
-            , enableMutex_(enableMutex)
-        {
-        }
+        Impl(const Logger* parent, const std::string& filenamePrefix, LogLevel level, bool enableMutex);
 
         void Log(const tm& tmNow, uint32_t microSeconds, const std::string& content)
         {
@@ -232,6 +229,7 @@ private:
         const Logger* parent_;
         const LogLevel level_;
         const bool enableMutex_;
+        const std::string symlink_;
 
         std::mutex lock_; // protects the following variables
         std::ofstream out_;
