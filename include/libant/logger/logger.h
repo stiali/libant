@@ -22,6 +22,7 @@ namespace ant {
  *   \l Log levels: 5 different levels are supported. Logs with different levels are written to different logfiles. By setting the Logger object to a higher log level, lower level logs will be filtered out.
  *   \l Log-through: Logs with higher severity level will be written to all the logfiles with lower severity level if configured to do so.
  *   \l Logs are not buffered, they are written to logfiles immediately with fileStream.write(log.c_str(), log.size()).
+ *   \l Symlinks named `LOG_LEVEL`.log_filename_prefix.log will be created and link to the most current logfiles.
  */
 class Logger {
 public:
