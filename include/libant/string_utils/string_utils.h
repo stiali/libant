@@ -73,21 +73,6 @@ std::string to_string<std::string>(const std::vector<std::string>& v)
     return s;
 }
 
-template<>
-std::string to_string<const std::string>(const std::vector<const std::string>& v)
-{
-    std::string s = "[";
-    for (const auto& vv : v) {
-        s.append("\"").append(vv).append("\" ");
-    }
-    if (s.size() > 1) {
-        s[s.size() - 1] = ']';
-    } else {
-        s.append("]");
-    }
-    return s;
-}
-
 } // namespace ant
 
 #endif //LIBANT_INCLUDE_LIBANT_STRING_UTILS_STRING_UTILS_H_
