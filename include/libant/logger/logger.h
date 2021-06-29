@@ -57,6 +57,7 @@ public:
      * ControlFlag controls how the logs are written. Use `|`(Or operator) to mix multiple flags.
      */
     enum ControlFlag {
+        ControlFlagNone = 0,
         ControlFlagLogThrough = 1, // Controls if logs with higher level are written to lower level log files.
         ControlFlagLogDate = 2,    // Controls if a date string formatted as '20201201' is prepended to the logs.
     };
