@@ -2,8 +2,12 @@
 #define LIBANT_LOGGER_LOGGER_H_
 
 #include <atomic>
+#ifdef _WIN32
 #include <fstream>
 #include <iostream>
+#else
+#include <unistd.h>
+#endif
 #include <memory>
 #include <mutex>
 #include <libant/logger/fmt/chrono.h>
@@ -179,7 +183,11 @@ public:
                 lock_.lock();
             }
 
+#ifdef _WIN32
             std::cout.write(buf->c_str(), buf->size());
+#else
+            write(STDOUT_FILENO, buf->c_str(), buf->size());
+#endif
 
             if (multiThreaded_) {
                 lock_.unlock();
@@ -193,6 +201,13 @@ private:
     class Impl {
     public:
         Impl(const Logger* parent, const std::string& filenamePrefix, LogLevel level, bool enableMutex);
+
+#ifndef _WIN32
+        ~Impl()
+        {
+            close(outFD_);
+        }
+#endif
 
         void Log(const tm& tmNow, uint32_t microSeconds, const std::string& content)
         {
@@ -219,7 +234,11 @@ private:
         const std::string symlink_;
 
         std::mutex lock_; // protects the following variables
+#ifdef _WIN32
         std::ofstream out_;
+#else
+        int outFD_{-1};
+#endif
         int curDay_{-1};
         uint64_t curFileSize_{0};
     };

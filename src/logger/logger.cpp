@@ -1,5 +1,9 @@
 #include <filesystem>
 
+#ifndef _WIN32
+#include <fcntl.h>
+#endif
+
 #include <libant/logger/logger.h>
 
 using namespace std;
@@ -57,9 +61,14 @@ Logger::Impl::Impl(const Logger* parent, const std::string& filenamePrefix, LogL
 
 bool Logger::Impl::log(const tm& tmNow, uint32_t microSeconds, const string& content)
 {
+#ifdef _WIN32
     if (curFileSize_ >= parent_->logFileMaxSize_ || curDay_ != tmNow.tm_yday || !out_) {
         out_.close();
-
+#else
+    if (curFileSize_ >= parent_->logFileMaxSize_ || curDay_ != tmNow.tm_yday || (outFD_ == -1)) {
+        close(outFD_);
+        outFD_ = -1;
+#endif
         error_code ec;
         if (!parent_->logDir_.empty()) {
             filesystem::create_directories(parent_->logDir_, ec);
@@ -69,10 +78,17 @@ bool Logger::Impl::log(const tm& tmNow, uint32_t microSeconds, const string& con
         }
 
         auto filename = fmt::format("{}.{}.{:%Y%m%d%H%M%S}{:06d}.log", parent_->logPathPrefix_, sLogLevelNames[level_], tmNow, microSeconds);
+#ifdef _WIN32
         out_.open(filename, ofstream::app);
         if (!out_) {
             return false;
         }
+#else
+        outFD_ = open(filename.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644);
+        if (outFD_ == -1) {
+            return false;
+        }
+#endif
 
         filesystem::remove(symlink_, ec);
         filesystem::create_symlink(filesystem::path(filename).filename(), symlink_, ec);
@@ -81,11 +97,18 @@ bool Logger::Impl::log(const tm& tmNow, uint32_t microSeconds, const string& con
         curFileSize_ = 0;
     }
 
+#ifdef _WIN32
     if (out_.write(content.c_str(), content.size())) {
+        out_.flush();
+#else
+    if (write(outFD_, content.c_str(), content.size()) >= 0) {
+#endif
         curFileSize_ += content.size();
         return true;
     }
 
+    close(outFD_);
+    outFD_ = -1;
     return false;
 }
 
