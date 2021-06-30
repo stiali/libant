@@ -58,8 +58,10 @@ public:
      */
     enum ControlFlag {
         ControlFlagNone = 0,
-        ControlFlagLogThrough = 1, // Controls if logs with higher level are written to lower level log files.
-        ControlFlagLogDate = 2,    // Controls if a date string formatted as '20201201' is prepended to the logs.
+        ControlFlagLogThrough = 0x01, // Controls if logs with higher level are written to lower level log files.
+        ControlFlagLogDate = 0x02,    // Controls if a date string formatted as '20201201' is prepended to the logs.
+        ControlFlagNoPrepends = 0x04, // Don't prepend any additional info to the logs.
+        ControlFlagNoSymlinks = 0x08, // Don't create symlinks.
     };
 
     /**
@@ -160,10 +162,12 @@ public:
         auto tNow = std::chrono::system_clock::now();
         auto curTm = std::chrono::duration_cast<std::chrono::microseconds>(tNow.time_since_epoch()).count();
         auto tmNow = fmt::localtime(curTm / 1000000);
-        if (!(controlFlags_ & ControlFlagLogDate)) {
-            fmt::format_to(backInserter, "{}{:%H:%M:%S} ", levelInitials_[level], tmNow);
-        } else {
-            fmt::format_to(backInserter, "{}{:%Y%m%d %H:%M:%S} ", levelInitials_[level], tmNow);
+        if (!(controlFlags_ & ControlFlagNoPrepends)) {
+            if (!(controlFlags_ & ControlFlagLogDate)) {
+                fmt::format_to(backInserter, "{}{:%H:%M:%S} ", levelInitials_[level], tmNow);
+            } else {
+                fmt::format_to(backInserter, "{}{:%Y%m%d %H:%M:%S} ", levelInitials_[level], tmNow);
+            }
         }
         fmt::format_to(backInserter, format, std::forward<Args>(args)...);
         buf->append("\n");

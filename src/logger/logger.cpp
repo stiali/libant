@@ -91,7 +91,9 @@ bool Logger::Impl::log(const tm& tmNow, uint32_t microSeconds, const string& con
 #endif
 
         filesystem::remove(symlink_, ec);
-        filesystem::create_symlink(filesystem::path(filename).filename(), symlink_, ec);
+        if (!(parent_->controlFlags_ & ControlFlagNoSymlinks)) {
+            filesystem::create_symlink(filesystem::path(filename).filename(), symlink_, ec);
+        }
 
         curDay_ = tmNow.tm_yday;
         curFileSize_ = 0;
