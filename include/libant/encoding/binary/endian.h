@@ -51,6 +51,80 @@ extern Endian SystemEndian;
 
 #endif
 
+/**
+ * Convert from big endian to little endian or vice versa
+ * @param v
+ * @return
+ */
+constexpr int8_t ByteSwap(int8_t v)
+{
+    return v;
+}
+
+constexpr uint8_t ByteSwap(uint8_t v)
+{
+    return v;
+}
+
+inline int16_t ByteSwap(int16_t v)
+{
+#ifdef __linux__
+    return bswap_16(v);
+#else
+    return ANT_BYTE_SWAP_16(v);
+#endif
+}
+
+inline uint16_t ByteSwap(uint16_t v)
+{
+#ifdef __linux__
+    return bswap_16(v);
+#else
+    return ANT_BYTE_SWAP_16(v);
+#endif
+}
+
+inline int32_t ByteSwap(int32_t v)
+{
+#ifdef __linux__
+    return bswap_32(v);
+#else
+    return ANT_BYTE_SWAP_32(v);
+#endif
+}
+
+inline uint32_t ByteSwap(uint32_t v)
+{
+#ifdef __linux__
+    return bswap_32(v);
+#else
+    return ANT_BYTE_SWAP_32(v);
+#endif
+}
+
+inline int64_t ByteSwap(int64_t v)
+{
+#ifdef __linux__
+    return bswap_64(v);
+#else
+    return ANT_BYTE_SWAP_64(v);
+#endif
+}
+
+inline uint64_t ByteSwap(uint64_t v)
+{
+#ifdef __linux__
+    return bswap_64(v);
+#else
+    return ANT_BYTE_SWAP_64(v);
+#endif
+}
+
+/**
+ * Convert from big endian to host endian
+ * @param v
+ * @return
+ */
 constexpr int8_t BigEndianToHost(int8_t v)
 {
     return v;
