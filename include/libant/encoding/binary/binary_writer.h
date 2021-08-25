@@ -64,7 +64,7 @@ public:
      */
     void WriteString(const void* s, size_t len)
     {
-        buf_.append(s, len);
+        buf_.append(reinterpret_cast<const char*>(s), len);
     }
 
     /**
