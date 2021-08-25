@@ -54,6 +54,17 @@ public:
     }
 
     /**
+     * Writes string `s` of length `len` into the binary stream.
+     *
+     * @param s
+     * @param len
+     */
+    void WriteString(const char* s, size_t len)
+    {
+        buf_.append(s, len);
+    }
+
+    /**
      * Writes length of the string of type `StringLenType` first, then writes the string payload into the binary stream.
      *
      * @tparam StringLenType type of the length of the string encoded before the string payload
