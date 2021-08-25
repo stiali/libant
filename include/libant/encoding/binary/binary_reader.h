@@ -1,6 +1,7 @@
 #ifndef LIBANT_ENCODING_BINARY_BINARY_READER_H_
 #define LIBANT_ENCODING_BINARY_BINARY_READER_H_
 
+#include <string>
 #include <string_view>
 
 #include "endian.h"
