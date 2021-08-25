@@ -1,7 +1,7 @@
 #ifndef LIBANT_ENCODING_BINARY_BINARY_READER_H_
 #define LIBANT_ENCODING_BINARY_BINARY_READER_H_
 
-#include <string>
+#include <string_view>
 
 #include "endian.h"
 
@@ -20,8 +20,19 @@ public:
      *
      * @param stream
      */
-    BinaryReader(const std::string& stream)
+    BinaryReader(std::string_view& stream)
         : buf_(stream)
+        , pos_(0)
+    {
+    }
+
+    /**
+     * Construct a BinaryReader object from `data` of length `dataLen`.
+     *
+     * @param stream
+     */
+    BinaryReader(const void* data, size_t dataLen)
+        : buf_(reinterpret_cast<const char*>(data), dataLen)
         , pos_(0)
     {
     }
@@ -87,7 +98,7 @@ public:
     }
 
 private:
-    const std::string& buf_;
+    std::string_view buf_;
     std::string::size_type pos_;
 };
 
