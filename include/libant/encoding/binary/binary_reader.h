@@ -99,7 +99,7 @@ public:
 
 private:
     std::string_view buf_;
-    std::string::size_type pos_;
+    std::string_view::size_type pos_;
 };
 
 } // namespace ant
