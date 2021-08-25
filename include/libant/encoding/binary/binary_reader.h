@@ -98,6 +98,19 @@ public:
         return false;
     }
 
+    const void* RemainingData() const
+    {
+        if (buf_.size() > pos_) {
+            return buf_.data() + pos_;
+        }
+        return nullptr;
+    }
+
+    size_t RemainingLength() const
+    {
+        return buf_.size() - pos_;
+    }
+
 private:
     std::string_view buf_;
     std::string_view::size_type pos_;

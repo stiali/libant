@@ -62,7 +62,7 @@ public:
      * @param s
      * @param len
      */
-    void WriteString(const char* s, size_t len)
+    void WriteString(const void* s, size_t len)
     {
         buf_.append(s, len);
     }
