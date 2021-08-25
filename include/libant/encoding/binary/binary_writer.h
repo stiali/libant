@@ -15,6 +15,9 @@ namespace ant {
 template<Endian endian>
 class BinaryWriter {
 public:
+    using size_type = std::string::size_type;
+
+public:
     /**
      * Construct a BinaryWriter object using `stream`.
      *
@@ -75,6 +78,22 @@ public:
     {
         WriteInteger(static_cast<StringLenType>(val.size()));
         WriteString(val);
+    }
+
+    /**
+     * Appends n bytes of random data to the underlying string.
+     */
+    void Append(size_t n)
+    {
+        buf_.resize(buf_.size() + n);
+    }
+
+    /**
+     * Return current size in bytes of the underlying string.
+     */
+    size_type Size() const
+    {
+        return buf_.size();
     }
 
 private:
