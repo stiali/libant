@@ -9,8 +9,13 @@ namespace ant {
 
 bool ComputeAndSetIPv4Checksum(ip* packet, const size_t packetLen)
 {
+    if (packetLen < sizeof(ip)) {
+        return false;
+    }
+
     const auto ipHeaderLen = static_cast<size_t>(packet->ip_hl) << 2;
-    if (ipHeaderLen > packetLen) {
+    const size_t ipPacketLen = ntohs(packet->ip_len);
+    if (packetLen < ipHeaderLen || packetLen != ipPacketLen) {
         return false;
     }
 
@@ -48,9 +53,8 @@ bool ComputeAndSetIPv4Checksum(ip* packet, const size_t packetLen)
 
 bool ComputeAndSetTCPv4Checksum(ip* packet, const size_t packetLen, const size_t ipHeaderLen)
 {
-    const size_t ipPacketLen = ntohs(packet->ip_len);
-    if (packetLen >= ipPacketLen && packetLen >= ipHeaderLen + sizeof(tcphdr)) {
-        uint16_t tcpLen = ipPacketLen - ipHeaderLen;
+    if (packetLen >= ipHeaderLen + sizeof(tcphdr)) {
+        uint16_t tcpLen = packetLen - ipHeaderLen;
         uint32_t sum = static_cast<uint16_t>(packet->ip_src.s_addr >> 16);
         sum += static_cast<uint16_t>(packet->ip_src.s_addr);
         sum += static_cast<uint16_t>(packet->ip_dst.s_addr >> 16);
