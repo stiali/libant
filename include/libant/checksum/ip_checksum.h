@@ -1,6 +1,8 @@
 #ifndef LIBANT_INCLUDE_LIBANT_CHECKSUM_IP_CHECKSUM_H_
 #define LIBANT_INCLUDE_LIBANT_CHECKSUM_IP_CHECKSUM_H_
 
+#include <cstddef>
+
 struct ip;
 
 namespace ant {

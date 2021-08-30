@@ -1,7 +1,7 @@
 #ifndef LIBANT_INCLUDE_LIBANT_CHECKSUM_CHECKSUM_H_
 #define LIBANT_INCLUDE_LIBANT_CHECKSUM_CHECKSUM_H_
 
-#include <cstdint>
+#include <cstddef>
 
 namespace ant {
 
