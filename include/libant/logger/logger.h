@@ -191,7 +191,7 @@ public:
 #ifdef _WIN32
             std::cout.write(buf->c_str(), buf->size());
 #else
-            write(STDOUT_FILENO, buf->c_str(), buf->size());
+            std::ignore = write(STDOUT_FILENO, buf->c_str(), buf->size());
 #endif
 
             if (multiThreaded_) {
