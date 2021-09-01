@@ -29,7 +29,7 @@ std::string to_string(const std::vector<T>& v)
 }
 
 template<>
-std::string to_string<char*>(const std::vector<char*>& v)
+inline std::string to_string<char*>(const std::vector<char*>& v)
 {
     std::string s = "[";
     for (const auto& vv : v) {
@@ -44,7 +44,7 @@ std::string to_string<char*>(const std::vector<char*>& v)
 }
 
 template<>
-std::string to_string<const char*>(const std::vector<const char*>& v)
+inline std::string to_string<const char*>(const std::vector<const char*>& v)
 {
     std::string s = "[";
     for (const auto& vv : v) {
@@ -59,7 +59,7 @@ std::string to_string<const char*>(const std::vector<const char*>& v)
 }
 
 template<>
-std::string to_string<std::string>(const std::vector<std::string>& v)
+inline std::string to_string<std::string>(const std::vector<std::string>& v)
 {
     std::string s = "[";
     for (const auto& vv : v) {
