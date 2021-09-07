@@ -98,6 +98,11 @@ public:
         return false;
     }
 
+    /**
+     * RemainingData returns a pointer to the unread data.
+     *
+     * @return pointer to the unread data.
+     */
     const void* RemainingData() const
     {
         if (buf_.size() > pos_) {
@@ -106,9 +111,24 @@ public:
         return nullptr;
     }
 
+    /**
+     * RemainingLength returns length of the unread data.
+     *
+     * @return length of the unread data.
+     */
     size_t RemainingLength() const
     {
         return buf_.size() - pos_;
+    }
+
+    /**
+     * CurrentPosition returns the current reading position to the underlying buffer.
+     *
+     * @return current reading position to the underlying buffer.
+     */
+    size_t CurrentPosition() const
+    {
+        return pos_;
     }
 
 private:
