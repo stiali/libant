@@ -14,7 +14,7 @@ namespace ant {
  * @return
  */
 template<typename T>
-std::string to_string(const std::vector<T>& v)
+std::string ToString(const std::vector<T>& v)
 {
     std::string s = "[";
     for (const auto& vv : v) {
@@ -29,7 +29,7 @@ std::string to_string(const std::vector<T>& v)
 }
 
 template<>
-inline std::string to_string<char*>(const std::vector<char*>& v)
+inline std::string ToString<char*>(const std::vector<char*>& v)
 {
     std::string s = "[";
     for (const auto& vv : v) {
@@ -44,7 +44,7 @@ inline std::string to_string<char*>(const std::vector<char*>& v)
 }
 
 template<>
-inline std::string to_string<const char*>(const std::vector<const char*>& v)
+inline std::string ToString<const char*>(const std::vector<const char*>& v)
 {
     std::string s = "[";
     for (const auto& vv : v) {
@@ -59,7 +59,7 @@ inline std::string to_string<const char*>(const std::vector<const char*>& v)
 }
 
 template<>
-inline std::string to_string<std::string>(const std::vector<std::string>& v)
+inline std::string ToString<std::string>(const std::vector<std::string>& v)
 {
     std::string s = "[";
     for (const auto& vv : v) {
@@ -72,6 +72,37 @@ inline std::string to_string<std::string>(const std::vector<std::string>& v)
     }
     return s;
 }
+
+/**
+ * SplitString splits the given string `src` by `sep`
+ *
+ * @param src
+ * @param sep
+ * @param sepLen
+ * @return vector of the splitted strings
+ */
+std::vector<std::string> SplitString(const char* src, const char* sep, size_t sepLen);
+
+/**
+ * SplitString splits the given string `src` by `sep`
+ *
+ * @param src
+ * @param sep
+ * @return vector of the splitted strings
+ */
+inline std::vector<std::string> SplitString(const std::string& src, const std::string& sep)
+{
+    return SplitString(src.c_str(), sep.c_str(), sep.size());
+}
+
+/**
+ * SplitString splits the given string `src` by `sep`
+ *
+ * @param src
+ * @param sep
+ * @return vector of the splitted strings
+ */
+std::vector<std::string> SplitString(const std::string& src, char sep);
 
 } // namespace ant
 
