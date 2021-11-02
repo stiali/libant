@@ -47,11 +47,11 @@ inline void ByteToHexString(uint8_t val, void* dst)
  *
  * @return the converted hex string in upper case.
  */
-inline std::string ByteToHexString(uint8_t hex)
+inline std::string ByteToHexString(uint8_t val)
 {
     std::string ret;
     ret.resize(2);
-    ByteToHexString(uint8_t val, ret.data());
+    ByteToHexString(val, ret.data());
     return ret;
 }
 
@@ -76,11 +76,11 @@ inline void ByteToLowerHexString(uint8_t val, void* dst)
  *
  * @return the converted hex string in upper case.
  */
-inline std::string ByteToLowerHexString(uint8_t hex)
+inline std::string ByteToLowerHexString(uint8_t val)
 {
     std::string ret;
     ret.resize(2);
-    ByteToLowerHexString(uint8_t val, ret.data());
+    ByteToLowerHexString(val, ret.data());
     return ret;
 }
 
@@ -119,6 +119,8 @@ inline std::string ToHexString(const void* src, size_t srcLen)
     for (size_t i = 0; i != srcLen; ++i) {
         ByteToHexString(source[i], &dest[i * 2]);
     }
+
+    return dest;
 }
 
 /**
@@ -170,13 +172,15 @@ inline void HexStringToBinary(const void* src, size_t srcLen, void* dst)
 {
     assert(srcLen % 2 == 0);
 
-    const char* src = reinterpret_cast<const char*>(src);
+    const char* source = reinterpret_cast<const char*>(src);
     uint8_t* dest = reinterpret_cast<uint8_t*>(dst);
 
     size_t i;
     for (i = 0; i != srcLen; i += 2) {
-        dest[i / 2] = HexCharsToByte(src[i], src[i + 1]);
+        dest[i / 2] = HexCharsToByte(source[i], source[i + 1]);
     }
+
+    return dest;
 }
 
 /**
