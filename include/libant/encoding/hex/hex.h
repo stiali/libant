@@ -158,6 +158,8 @@ inline std::string ToLowerHexString(const void* src, size_t srcLen)
     for (size_t i = 0; i != srcLen; ++i) {
         ByteToLowerHexString(source[i], &dest[i * 2]);
     }
+
+    return dest;
 }
 
 /**
@@ -179,8 +181,6 @@ inline void HexStringToBinary(const void* src, size_t srcLen, void* dst)
     for (i = 0; i != srcLen; i += 2) {
         dest[i / 2] = HexCharsToByte(source[i], source[i + 1]);
     }
-
-    return dest;
 }
 
 /**
