@@ -147,30 +147,58 @@ inline uint16_t BigEndianToHost(uint16_t v)
 
 inline int32_t BigEndianToHost(int32_t v)
 {
-    return ntohl(v);
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::LittleEndian) {
+        return bswap_32(v);
+    }
+#else
+    if (SystemEndian == Endian::LittleEndian) {
+        return ANT_BYTE_SWAP_32(v);
+    }
+#endif
+    return v;
 }
 
 inline uint32_t BigEndianToHost(uint32_t v)
 {
-    return ntohl(v);
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::LittleEndian) {
+        return bswap_32(v);
+    }
+#else
+    if (SystemEndian == Endian::LittleEndian) {
+        return ANT_BYTE_SWAP_32(v);
+    }
+#endif
+    return v;
 }
 
 inline int64_t BigEndianToHost(int64_t v)
 {
 #ifdef __linux__
-    return be64toh(v);
+    if constexpr (SystemEndian == Endian::LittleEndian) {
+        return bswap_64(v);
+    }
 #else
-    return ntohll(v);
+    if (SystemEndian == Endian::LittleEndian) {
+        return ANT_BYTE_SWAP_64(v);
+    }
 #endif
+    return v;
 }
 
 inline uint64_t BigEndianToHost(uint64_t v)
 {
 #ifdef __linux__
-    return be64toh(v);
+    if constexpr (SystemEndian == Endian::LittleEndian) {
+        return bswap_64(v);
+    }
 #else
-    return ntohll(v);
+    if (SystemEndian == Endian::LittleEndian) {
+        return ANT_BYTE_SWAP_64(v);
+    }
 #endif
+    return v;
 }
 
 constexpr int8_t HostToBigEndian(int8_t v)
@@ -195,30 +223,58 @@ inline uint16_t HostToBigEndian(uint16_t v)
 
 inline int32_t HostToBigEndian(int32_t v)
 {
-    return htonl(v);
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::LittleEndian) {
+        return bswap_32(v);
+    }
+#else
+    if (SystemEndian == Endian::LittleEndian) {
+        return ANT_BYTE_SWAP_32(v);
+    }
+#endif
+    return v;
 }
 
 inline uint32_t HostToBigEndian(uint32_t v)
 {
-    return htonl(v);
+#ifdef __linux__
+    if constexpr (SystemEndian == Endian::LittleEndian) {
+        return bswap_32(v);
+    }
+#else
+    if (SystemEndian == Endian::LittleEndian) {
+        return ANT_BYTE_SWAP_32(v);
+    }
+#endif
+    return v;
 }
 
 inline int64_t HostToBigEndian(int64_t v)
 {
 #ifdef __linux__
-    return htobe64(v);
+    if constexpr (SystemEndian == Endian::LittleEndian) {
+        return bswap_64(v);
+    }
 #else
-    return htonll(v);
+    if (SystemEndian == Endian::LittleEndian) {
+        return ANT_BYTE_SWAP_64(v);
+    }
 #endif
+    return v;
 }
 
 inline uint64_t HostToBigEndian(uint64_t v)
 {
 #ifdef __linux__
-    return htobe64(v);
+    if constexpr (SystemEndian == Endian::LittleEndian) {
+        return bswap_64(v);
+    }
 #else
-    return htonll(v);
+    if (SystemEndian == Endian::LittleEndian) {
+        return ANT_BYTE_SWAP_64(v);
+    }
 #endif
+    return v;
 }
 
 constexpr int8_t LittleEndianToHost(int8_t v)
