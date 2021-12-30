@@ -12,6 +12,11 @@ include_directories(
 )
 
 file(GLOB_RECURSE LIBANT_SOURCE_FILES src/*.cpp)
+if (FILE_SYSTEM_NOT_SUPPORTED)
+    list(REMOVE_ITEM LIBANT_SOURCE_FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/file_utils/file_purger.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/logger/logger.cpp)
+endif ()
 
 add_library(ant ${LIBANT_SOURCE_FILES})
 
@@ -26,5 +31,4 @@ set_target_properties(ant
         PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_INSTALL_LIBDIR}"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_INSTALL_LIBDIR}"
-)
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_INSTALL_LIBDIR}")
