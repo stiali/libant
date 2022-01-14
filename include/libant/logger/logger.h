@@ -173,7 +173,7 @@ public:
         buf->append("\n");
 
         if (logDest_ & LogDestFile) {
-            auto microSeconds = curTm % 1000000;
+            auto microSeconds = static_cast<uint32_t>(curTm % 1000000);
             if (controlFlags_ & ControlFlagLogThrough) {
                 for (int lv = level; lv >= lowestLevel; --lv) {
                     loggers_[lv]->Log(tmNow, microSeconds, *buf);
