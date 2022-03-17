@@ -104,6 +104,34 @@ inline std::vector<std::string> SplitString(const std::string& src, const std::s
  */
 std::vector<std::string> SplitString(const std::string& src, char sep);
 
+/**
+ * TrimStringLeft
+ * @param s
+ */
+inline void TrimStringLeft(std::string& s)
+{
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](char ch) { return !std::isspace(ch); }));
+}
+
+/**
+ * TrimStringRight
+ * @param s
+ */
+inline void TrimStringRight(std::string& s)
+{
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](char ch) { return !std::isspace(ch); }).base(), s.end());
+}
+
+/**
+ * TrimString
+ * @param s
+ */
+inline void TrimString(std::string& s)
+{
+    TrimStringLeft(s);
+    TrimStringRight(s);
+}
+
 } // namespace ant
 
 #endif //LIBANT_INCLUDE_LIBANT_STRING_UTILS_STRING_UTILS_H_
