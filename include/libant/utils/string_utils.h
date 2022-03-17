@@ -1,6 +1,7 @@
 #ifndef LIBANT_INCLUDE_LIBANT_STRING_UTILS_STRING_UTILS_H_
 #define LIBANT_INCLUDE_LIBANT_STRING_UTILS_STRING_UTILS_H_
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -130,6 +131,46 @@ inline void TrimString(std::string& s)
 {
     TrimStringLeft(s);
     TrimStringRight(s);
+}
+
+/**
+ * ToUpper
+ * @param s
+ */
+inline void ToUpper(std::string& s)
+{
+    std::transform(s.begin(), s.end(), s.begin(), toupper);
+}
+
+/**
+ * ToUpperCopy
+ * @param s
+ * @return
+ */
+inline std::string ToUpperCopy(std::string s)
+{
+    std::transform(s.begin(), s.end(), s.begin(), toupper);
+    return s;
+}
+
+/**
+ * ToLower
+ * @param s
+ */
+inline void ToLower(std::string& s)
+{
+    std::transform(s.begin(), s.end(), s.begin(), tolower);
+}
+
+/**
+ * ToLowerCopy
+ * @param s
+ * @return
+ */
+inline std::string ToLowerCopy(std::string s)
+{
+    std::transform(s.begin(), s.end(), s.begin(), tolower);
+    return s;
 }
 
 } // namespace ant
