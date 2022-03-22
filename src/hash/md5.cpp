@@ -23,7 +23,7 @@ string MD5File(const string& filepath)
         return sum;
     }
 
-    constexpr streamsize bufSize = 1024 * 1024;
+    constexpr streamsize bufSize = 256 * 1024;
     char buf[bufSize];
     for (;;) {
         fin.read(buf, bufSize);
