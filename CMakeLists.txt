@@ -6,6 +6,15 @@ set(BIN_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/bin)
 
 option(BUILD_TEST_CASES "building test cases" OFF)
 
+# OpenSSL
+find_package(OpenSSL REQUIRED)
+if (OpenSSL_FOUND)
+    message(STATUS "OpenSSL library found")
+    include_directories(${OPENSSL_INCLUDE_DIR})
+else ()
+    message(FATAL_ERROR "OpenSSL library is needed but can‘t be found")
+endif ()
+
 # include search dir
 include_directories(
         ${PROJECT_SOURCE_DIR}/../
