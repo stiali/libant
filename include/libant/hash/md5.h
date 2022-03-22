@@ -8,9 +8,10 @@ namespace ant {
 /**
  * MD5File computes MD5 checksum from a given file
  * @param filepath file to be computed
- * @return MD5 checksum in lowercase hex string at success, empty string at failure
+ * @param md5 computed md5 checksum
+ * @return true on success, false on failure
  */
-std::string MD5File(const std::string& filepath);
+bool MD5File(const std::string& filepath, std::string& md5);
 
 } // namespace ant
 

@@ -9,18 +9,16 @@ using namespace std;
 
 namespace ant {
 
-string MD5File(const string& filepath)
+bool MD5File(const std::string& filepath, std::string& md5)
 {
-    string sum;
-
     ifstream fin(filepath, ifstream::binary);
     if (unlikely(!fin)) {
-        return sum;
+        return false;
     }
 
     MD5_CTX ctx;
     if (unlikely(!MD5_Init(&ctx))) {
-        return sum;
+        return false;
     }
 
     constexpr streamsize bufSize = 256 * 1024;
@@ -28,21 +26,21 @@ string MD5File(const string& filepath)
     for (;;) {
         fin.read(buf, bufSize);
         if (unlikely(!MD5_Update(&ctx, buf, fin.gcount()))) {
-            return sum;
+            return false;
         }
         if (fin.gcount() < bufSize) {
             break;
         }
     }
 
-    unsigned char md5[MD5_DIGEST_LENGTH];
-    if (unlikely(!MD5_Final(md5, &ctx))) {
-        return sum;
+    unsigned char md[MD5_DIGEST_LENGTH];
+    if (unlikely(!MD5_Final(md, &ctx))) {
+        return false;
     }
 
-    sum.resize(MD5_DIGEST_LENGTH * 2);
-    ant::ToLowerHexString(md5, MD5_DIGEST_LENGTH, sum.data());
-    return sum;
+    md5.resize(MD5_DIGEST_LENGTH * 2);
+    ant::ToLowerHexString(md, MD5_DIGEST_LENGTH, md5.data());
+    return true;
 }
 
 } // namespace ant
