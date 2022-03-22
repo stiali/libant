@@ -25,11 +25,12 @@ string MD5File(const string& filepath)
 
     constexpr streamsize bufSize = 1024 * 1024;
     char buf[bufSize];
-    for (auto n = fin.readsome(buf, bufSize); n > 0; n = fin.readsome(buf, bufSize)) {
-        if (unlikely(!MD5_Update(&ctx, buf, n))) {
+    for (;;) {
+        fin.read(buf, bufSize);
+        if (unlikely(!MD5_Update(&ctx, buf, fin.gcount()))) {
             return sum;
         }
-        if (n < bufSize) {
+        if (fin.gcount() < bufSize) {
             break;
         }
     }
