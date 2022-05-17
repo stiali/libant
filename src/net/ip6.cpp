@@ -17,17 +17,20 @@ enum {
     kNextHeaderDestOpts = 60,
 };
 
-const tcphdr* LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
+ConstTcpPacket LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
 {
+    ConstTcpPacket packet{nullptr, 0};
+
     auto basePtr = reinterpret_cast<const uint8_t*>(ipPacket) + sizeof(ip6_hdr);
     auto nextHeader = ipPacket->ip6_nxt;
     for (;;) {
         switch (nextHeader) {
         case kNextHeaderTCP:
             if (payloadLength > sizeof(tcphdr)) {
-                return reinterpret_cast<const tcphdr*>(basePtr);
+                packet.Header = reinterpret_cast<const tcphdr*>(basePtr);
+                packet.Length = payloadLength;
             }
-            return nullptr;
+            break;
         case kNextHeaderHopByHop:
         case kNextHeaderRouting:
         case kNextHeaderDestOpts:
@@ -41,7 +44,7 @@ const tcphdr* LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
                     continue;
                 }
             }
-            return nullptr;
+            break;
         case kNextHeaderAuth:
             if (payloadLength > 8) {
                 auto ext = reinterpret_cast<const ip6_ext*>(basePtr);
@@ -53,24 +56,29 @@ const tcphdr* LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
                     continue;
                 }
             }
-            return nullptr;
+            break;
         default:
-            return nullptr;
+            break;
         }
     }
+
+    return packet;
 }
 
-const udphdr* LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
+ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
 {
+    ConstUdpPacket packet{nullptr, 0};
+
     auto basePtr = reinterpret_cast<const uint8_t*>(ipPacket) + sizeof(ip6_hdr);
     auto nextHeader = ipPacket->ip6_nxt;
     for (;;) {
         switch (nextHeader) {
         case kNextHeaderUDP:
             if (payloadLength > sizeof(udphdr)) {
-                return reinterpret_cast<const udphdr*>(basePtr);
+                packet.Header = reinterpret_cast<const udphdr*>(basePtr);
+                packet.Length = payloadLength;
             }
-            return nullptr;
+            break;
         case kNextHeaderHopByHop:
         case kNextHeaderRouting:
         case kNextHeaderDestOpts:
@@ -84,7 +92,7 @@ const udphdr* LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
                     continue;
                 }
             }
-            return nullptr;
+            break;
         case kNextHeaderAuth:
             if (payloadLength > 8) {
                 auto ext = reinterpret_cast<const ip6_ext*>(basePtr);
@@ -96,11 +104,13 @@ const udphdr* LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
                     continue;
                 }
             }
-            return nullptr;
+            break;
         default:
-            return nullptr;
+            break;
         }
     }
+
+    return packet;
 }
 
 } // namespace ant

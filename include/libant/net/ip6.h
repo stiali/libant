@@ -7,42 +7,64 @@
 
 namespace ant {
 
-/**
- * LocateTcpHeader returns, if ipPacket is a TCP packet, a pointer to the base address of the TCP packet.
- * @param ipPacket
- * @param payloadLength
- * @return Pointer to the base address of a TCP packet, or nullptr if it's not a TCP packet.
- */
-const tcphdr* LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength);
+struct TcpPacket {
+    tcphdr* Header;  // pointer to the base address of the TCP packet
+    uint32_t Length; // length in bytes of the TCP packet, including the TCP header
+};
+
+struct ConstTcpPacket {
+    const tcphdr* Header; // pointer to the base address of the TCP packet
+    uint32_t Length;      // length in bytes of the TCP packet, including the TCP header
+};
+
+struct UdpPacket {
+    udphdr* Header;  // pointer to the base address of the TCP packet
+    uint32_t Length; // length in bytes of the TCP packet, including the TCP header
+};
+
+struct ConstUdpPacket {
+    const udphdr* Header; // pointer to the base address of the TCP packet
+    uint32_t Length;      // length in bytes of the TCP packet, including the TCP header
+};
 
 /**
  * LocateTcpHeader returns, if ipPacket is a TCP packet, a pointer to the base address of the TCP packet.
- * @param ipPacket
- * @param payloadLength
+ * @param ipPacket pointer to an IPv6 packet
+ * @param payloadLength length of the payload, not including the IPv6 header
  * @return Pointer to the base address of a TCP packet, or nullptr if it's not a TCP packet.
  */
-inline tcphdr* LocateTcpHeader(ip6_hdr* ipPacket, uint32_t payloadLength)
+ConstTcpPacket LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength);
+
+/**
+ * LocateTcpHeader returns, if ipPacket is a TCP packet, a pointer to the base address of the TCP packet.
+ * @param ipPacket pointer to an IPv6 packet
+ * @param payloadLength length of the payload, not including the IPv6 header
+ * @return Pointer to the base address of a TCP packet, or nullptr if it's not a TCP packet.
+ */
+TcpPacket LocateTcpHeader(ip6_hdr* ipPacket, uint32_t payloadLength)
 {
-    return const_cast<tcphdr*>(LocateTcpHeader(const_cast<const ip6_hdr*>(ipPacket), payloadLength));
+    auto packet = LocateTcpHeader(const_cast<const ip6_hdr*>(ipPacket), payloadLength);
+    return TcpPacket{const_cast<tcphdr*>(packet.Header), packet.Length};
 }
 
 /**
  * LocateUdpHeader returns, if ipPacket is a UDP packet, a pointer to the base address of the UDP packet.
- * @param ipPacket
- * @param payloadLength
+ * @param ipPacket pointer to an IPv6 packet
+ * @param payloadLength length of the payload, not including the IPv6 header
  * @return Pointer to the base address of a UDP packet, or nullptr if it's not a UDP packet.
  */
-const udphdr* LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength);
+ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength);
 
 /**
  * LocateUdpHeader returns, if ipPacket is a UDP packet, a pointer to the base address of the UDP packet.
- * @param ipPacket
- * @param payloadLength
+ * @param ipPacket pointer to an IPv6 packet
+ * @param payloadLength length of the payload, not including the IPv6 header
  * @return Pointer to the base address of a UDP packet, or nullptr if it's not a UDP packet.
  */
-inline udphdr* LocateUdpHeader(ip6_hdr* ipPacket, uint32_t payloadLength)
+UdpPacket LocateUdpHeader(ip6_hdr* ipPacket, uint32_t payloadLength)
 {
-    return const_cast<udphdr*>(LocateUdpHeader(const_cast<const ip6_hdr*>(ipPacket), payloadLength));
+    auto packet = LocateUdpHeader(const_cast<const ip6_hdr*>(ipPacket), payloadLength);
+    return UdpPacket{const_cast<udphdr*>(packet.Header), packet.Length};
 }
 
 } // namespace ant
