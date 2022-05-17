@@ -1,8 +1,8 @@
 #ifndef LIBANT_INCLUDE_LIBANT_NET_UDP6_H_
 #define LIBANT_INCLUDE_LIBANT_NET_UDP6_H_
 
+#include <netinet/ip6.h>
 #include <netinet/udp.h>
-#include <libant/net/ip6.h>
 
 namespace ant {
 

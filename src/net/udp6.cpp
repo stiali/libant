@@ -10,15 +10,15 @@ ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
     auto nextHeader = ipPacket->ip6_nxt;
     for (;;) {
         switch (nextHeader) {
-        case kNextHeaderUDP:
+        case IPPROTO_UDP:
             if (payloadLength > sizeof(udphdr)) {
                 packet.Header = reinterpret_cast<const udphdr*>(basePtr);
                 packet.Length = payloadLength;
             }
             break;
-        case kNextHeaderHopByHop:
-        case kNextHeaderRouting:
-        case kNextHeaderDestOpts:
+        case IPPROTO_HOPOPTS:
+        case IPPROTO_ROUTING:
+        case IPPROTO_DSTOPTS:
             if (payloadLength > 8) {
                 auto ext = reinterpret_cast<const ip6_ext*>(basePtr);
                 auto extLen = static_cast<uint32_t>(ext->ip6e_len) * 8 + 8;
@@ -30,7 +30,7 @@ ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
                 }
             }
             break;
-        case kNextHeaderAuth:
+        case IPPROTO_AH:
             if (payloadLength > 8) {
                 auto ext = reinterpret_cast<const ip6_ext*>(basePtr);
                 auto extLen = static_cast<uint32_t>(ext->ip6e_len) * 4 + 8;

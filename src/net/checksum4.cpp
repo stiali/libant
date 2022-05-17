@@ -1,21 +1,21 @@
-#include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/udp.h>
-#include <netinet/tcp.h>
+
+#include <libant/utils/likely.h>
 #include <libant/checksum/checksum.h>
-#include <libant/checksum/ip_checksum.h>
+#include <libant/net/checksum4.h>
 
 namespace ant {
 
-bool ComputeAndSetIPv4Checksum(ip* packet, const size_t packetLen)
+bool ComputeAndSetChecksum(ip* packet, const size_t packetLen)
 {
-    if (packetLen < sizeof(ip)) {
+    if (unlikely(packetLen < sizeof(ip))) {
         return false;
     }
 
     const auto ipHeaderLen = static_cast<size_t>(packet->ip_hl) << 2;
     const size_t ipPacketLen = ntohs(packet->ip_len);
-    if (packetLen < ipHeaderLen || packetLen != ipPacketLen) {
+    if (unlikely(packetLen < ipHeaderLen || packetLen != ipPacketLen)) {
         return false;
     }
 
@@ -42,7 +42,7 @@ bool ComputeAndSetIPv4Checksum(ip* packet, const size_t packetLen)
         }
         break;
     case IPPROTO_TCP:
-        ret = ComputeAndSetTCPv4Checksum(packet, packetLen, ipHeaderLen);
+        ret = ComputeAndSetChecksum(packet, reinterpret_cast<tcphdr*>(base + ipHeaderLen), packetLen - ipHeaderLen);
         break;
     default:
         break;
@@ -51,23 +51,21 @@ bool ComputeAndSetIPv4Checksum(ip* packet, const size_t packetLen)
     return ret;
 }
 
-bool ComputeAndSetTCPv4Checksum(ip* packet, const size_t packetLen, const size_t ipHeaderLen)
+bool ComputeAndSetChecksum(const ip* ipHeader, tcphdr* tcpHeader, const size_t tcpPacketLen)
 {
-    if (packetLen >= ipHeaderLen + sizeof(tcphdr)) {
-        uint16_t tcpLen = packetLen - ipHeaderLen;
-        uint32_t sum = static_cast<uint16_t>(packet->ip_src.s_addr >> 16);
-        sum += static_cast<uint16_t>(packet->ip_src.s_addr);
-        sum += static_cast<uint16_t>(packet->ip_dst.s_addr >> 16);
-        sum += static_cast<uint16_t>(packet->ip_dst.s_addr);
-        sum += htons(IPPROTO_TCP);
-        sum += htons(tcpLen);
-
-        auto tcpHeader = reinterpret_cast<tcphdr*>(reinterpret_cast<uint8_t*>(packet) + ipHeaderLen);
-        tcpHeader->th_sum = 0;
-        tcpHeader->th_sum = ~FinishChecksum16(AddChecksum16(sum, tcpHeader, tcpLen));
-        return true;
+    if (tcpPacketLen < sizeof(tcphdr)) {
+        return false;
     }
-    return false;
+
+    uint32_t sum = static_cast<uint16_t>(ipHeader->ip_src.s_addr >> 16);
+    sum += static_cast<uint16_t>(ipHeader->ip_src.s_addr);
+    sum += static_cast<uint16_t>(ipHeader->ip_dst.s_addr >> 16);
+    sum += static_cast<uint16_t>(ipHeader->ip_dst.s_addr);
+    sum += htons(IPPROTO_TCP);
+    sum += htons(tcpPacketLen);
+    tcpHeader->th_sum = 0;
+    tcpHeader->th_sum = ~FinishChecksum16(AddChecksum16(sum, tcpHeader, tcpPacketLen));
+    return true;
 }
 
 } // namespace ant
