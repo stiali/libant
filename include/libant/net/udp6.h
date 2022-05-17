@@ -30,7 +30,7 @@ ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength);
  * @param payloadLength length of the payload, not including the IPv6 header
  * @return Pointer to the base address of a UDP packet, or nullptr if it's not a UDP packet.
  */
-UdpPacket LocateUdpHeader(ip6_hdr* ipPacket, uint32_t payloadLength)
+inline UdpPacket LocateUdpHeader(ip6_hdr* ipPacket, uint32_t payloadLength)
 {
     auto packet = LocateUdpHeader(const_cast<const ip6_hdr*>(ipPacket), payloadLength);
     return UdpPacket{const_cast<udphdr*>(packet.Header), packet.Length};

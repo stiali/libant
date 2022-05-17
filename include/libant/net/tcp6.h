@@ -30,7 +30,7 @@ ConstTcpPacket LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength);
  * @param payloadLength length of the payload, not including the IPv6 header
  * @return Pointer to the base address of a TCP packet, or nullptr if it's not a TCP packet.
  */
-TcpPacket LocateTcpHeader(ip6_hdr* ipPacket, uint32_t payloadLength)
+inline TcpPacket LocateTcpHeader(ip6_hdr* ipPacket, uint32_t payloadLength)
 {
     auto packet = LocateTcpHeader(const_cast<const ip6_hdr*>(ipPacket), payloadLength);
     return TcpPacket{const_cast<tcphdr*>(packet.Header), packet.Length};
