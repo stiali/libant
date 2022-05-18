@@ -7,7 +7,7 @@
 namespace ant {
 
 /**
- * Add checksum of `data` to `currentChecksum`. Total data length of the added data should not exceed 120000 bytes.
+ * Add checksum of `data` to `currentChecksum`.
  *
  * @param currentChecksum
  * @param data
@@ -53,7 +53,7 @@ inline uint16_t FinishChecksum16(uint64_t currentChecksum)
  * Checksum32 computes a 32-bit checksum of `data`
  *
  * @param data
- * @param dataLen cannot be longer then 120000 bytes
+ * @param dataLen
  *
  * @return a 32-bit checksum of `data`
  */
@@ -66,7 +66,7 @@ inline uint32_t Checksum32(const void* data, size_t dataLen)
  * Checksum16 computes a 16-bit checksum of `data`
  *
  * @param data
- * @param dataLen cannot be longer then 120000 bytes
+ * @param dataLen
  *
  * @return a 16-bit checksum of `data`
  */
