@@ -14,6 +14,31 @@ namespace ant {
  * @param dataLen
  * @return checksum of `data` plus `currentChecksum`
  */
+uint32_t AddChecksum16(uint32_t currentChecksum, const void* data, size_t dataLen);
+
+/**
+ * fold the 32-bit checksum into a 16-bit checksum
+ *
+ * @param currentChecksum
+ * @return the folded 16-bit checksum
+ */
+inline uint16_t FinishChecksum16(uint32_t currentChecksum)
+{
+    // fold the 32-bit checksum into a 16-bit checksum
+    while (currentChecksum > 0xFFFF) {
+        currentChecksum = (currentChecksum >> 16) + (currentChecksum & 0xFFFF);
+    }
+    return static_cast<uint16_t>(currentChecksum);
+}
+
+/**
+ * Add checksum of `data` to `currentChecksum`. Total data length of the added data should not exceed 120000 bytes.
+ *
+ * @param currentChecksum
+ * @param data
+ * @param dataLen
+ * @return checksum of `data` plus `currentChecksum`
+ */
 uint64_t AddChecksum(uint64_t currentChecksum, const void* data, size_t dataLen);
 
 /**
