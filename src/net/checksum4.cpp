@@ -57,14 +57,17 @@ bool ComputeAndSetChecksum(const ip* ipHeader, tcphdr* tcpHeader, const size_t t
         return false;
     }
 
-    uint32_t sum = static_cast<uint16_t>(ipHeader->ip_src.s_addr >> 16);
-    sum += static_cast<uint16_t>(ipHeader->ip_src.s_addr);
-    sum += static_cast<uint16_t>(ipHeader->ip_dst.s_addr >> 16);
-    sum += static_cast<uint16_t>(ipHeader->ip_dst.s_addr);
-    sum += htons(IPPROTO_TCP);
-    sum += htons(tcpPacketLen);
+    uint64_t sum = ipHeader->ip_src.s_addr;
+    sum += ipHeader->ip_dst.s_addr;
+
+    uint8_t tmp[4];
+    tmp[0] = 0;
+    tmp[1] = IPPROTO_TCP;
+    *reinterpret_cast<uint16_t*>(tmp + 2) = htons(tcpPacketLen);
+    sum += *reinterpret_cast<uint32_t*>(tmp);
+
     tcpHeader->th_sum = 0;
-    tcpHeader->th_sum = ~FinishChecksum16(AddChecksum16(sum, tcpHeader, tcpPacketLen));
+    tcpHeader->th_sum = ~FinishChecksum16(AddChecksum(sum, tcpHeader, tcpPacketLen));
     return true;
 }
 

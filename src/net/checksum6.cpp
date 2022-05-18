@@ -24,7 +24,7 @@ bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, tcphdr* tcpHeader, const siz
     sum += htonl(tcpPacketLen);
     sum += htonl(IPPROTO_TCP);
     tcpHeader->th_sum = 0;
-    tcpHeader->th_sum = ~FinishChecksum16(AddChecksum32(sum, tcpHeader, tcpPacketLen));
+    tcpHeader->th_sum = ~FinishChecksum16(AddChecksum(sum, tcpHeader, tcpPacketLen));
     return true;
 }
 
