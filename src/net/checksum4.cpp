@@ -53,7 +53,7 @@ bool ComputeAndSetChecksum(ip* packet, const size_t packetLen)
 
 bool ComputeAndSetChecksum(const ip* ipHeader, tcphdr* tcpHeader, const size_t tcpPacketLen)
 {
-    if (tcpPacketLen < sizeof(tcphdr)) {
+    if (unlikely(tcpPacketLen < sizeof(tcphdr))) {
         return false;
     }
 

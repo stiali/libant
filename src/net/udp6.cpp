@@ -15,7 +15,7 @@ ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
                 packet.Header = reinterpret_cast<const udphdr*>(basePtr);
                 packet.Length = payloadLength;
             }
-            break;
+            return packet;
         case IPPROTO_HOPOPTS:
         case IPPROTO_ROUTING:
         case IPPROTO_DSTOPTS:
@@ -29,7 +29,7 @@ ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
                     continue;
                 }
             }
-            break;
+            return packet;
         case IPPROTO_AH:
             if (payloadLength > 8) {
                 auto ext = reinterpret_cast<const ip6_ext*>(basePtr);
@@ -41,13 +41,11 @@ ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
                     continue;
                 }
             }
-            break;
+            return packet;
         default:
-            break;
+            return packet;
         }
     }
-
-    return packet;
 }
 
 } // namespace ant

@@ -18,7 +18,7 @@ namespace ant {
 bool ComputeAndSetChecksum(ip* packet, const size_t packetLen);
 
 /**
- * Compute and set checksum for a TCP packet
+ * Compute and set checksum for a TCP packet over IPv4
  *
  * @param ipHeader
  * @param tcpHeader

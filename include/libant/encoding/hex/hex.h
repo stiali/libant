@@ -165,7 +165,7 @@ inline std::string ToLowerHexString(const void* src, size_t srcLen)
 /**
  * @brief Converts a hex string to a binary string.
  *
- * @param src hex string to be converted.
+ * @param src hex string to be converted, case-insensitive.
  * @param srcLen length of the hex string. Length of the hex string must be multiple of 2.
  * @param dst memory to hold the converted binary string. Must be equal to greater than (srcLen / 2) bytes.
  *
@@ -186,7 +186,7 @@ inline void HexStringToBinary(const void* src, size_t srcLen, void* dst)
 /**
  * @brief Converts a hex string to a binary string.
  *
- * @param src hex string to be converted.
+ * @param src hex string to be converted, case-insensitive.
  * @param srcLen length of the hex string. Length of the hex string must be multiple of 2.
  * @param dst memory to hold the converted binary string. Must be equal to greater than (srcLen / 2) bytes.
  *
