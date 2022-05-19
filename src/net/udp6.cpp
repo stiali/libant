@@ -11,7 +11,7 @@ ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
     for (;;) {
         switch (nextHeader) {
         case IPPROTO_UDP:
-            if (payloadLength > sizeof(udphdr)) {
+            if (payloadLength >= sizeof(udphdr)) {
                 packet.Header = reinterpret_cast<const udphdr*>(basePtr);
                 packet.Length = payloadLength;
             }

@@ -11,7 +11,7 @@ ConstTcpPacket LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
     for (;;) {
         switch (nextHeader) {
         case IPPROTO_TCP:
-            if (payloadLength > sizeof(tcphdr)) {
+            if (payloadLength >= sizeof(tcphdr)) {
                 packet.Header = reinterpret_cast<const tcphdr*>(basePtr);
                 packet.Length = payloadLength;
             }
