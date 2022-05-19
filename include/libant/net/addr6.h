@@ -1,8 +1,10 @@
-#ifndef LIBANT_INCLUDE_LIBANT_NET_IN6HASH_H_
-#define LIBANT_INCLUDE_LIBANT_NET_IN6HASH_H_
+#ifndef LIBANT_INCLUDE_LIBANT_NET_ADDR6_H_
+#define LIBANT_INCLUDE_LIBANT_NET_ADDR6_H_
 
 #include <cstring>
 #include <functional>
+#include <string>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 
 namespace std {
@@ -23,4 +25,17 @@ inline bool operator==(const in6_addr& lhs, const in6_addr& rhs)
     return memcmp(&lhs, &rhs, sizeof(lhs)) == 0;
 }
 
-#endif //LIBANT_INCLUDE_LIBANT_NET_IN6HASH_H_
+namespace ant {
+
+inline std::string ToString(const in6_addr& addr)
+{
+    char buf[INET6_ADDRSTRLEN];
+    if (inet_ntop(AF_INET6, &addr, buf, sizeof(buf))) {
+        return std::string(buf);
+    }
+    return std::string();
+}
+
+} // namespace ant
+
+#endif //LIBANT_INCLUDE_LIBANT_NET_ADDR6_H_
