@@ -36,6 +36,13 @@ inline std::string ToString(const in6_addr& addr)
     return std::string();
 }
 
+inline bool IsV4Mapped(const in6_addr& addr)
+{
+    return ((addr.s6_addr[0] == 0) && (addr.s6_addr[1] == 0) && (addr.s6_addr[2] == 0) && (addr.s6_addr[3] == 0) && (addr.s6_addr[4] == 0) &&
+            (addr.s6_addr[5] == 0) && (addr.s6_addr[6] == 0) && (addr.s6_addr[7] == 0) && (addr.s6_addr[8] == 0) && (addr.s6_addr[9] == 0) &&
+            (addr.s6_addr[10] == 0xff) && (addr.s6_addr[11] == 0xff));
+}
+
 } // namespace ant
 
 #endif //LIBANT_INCLUDE_LIBANT_NET_ADDR6_H_
