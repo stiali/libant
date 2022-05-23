@@ -7,13 +7,13 @@
 namespace ant {
 
 struct TcpPacket {
-    tcphdr* Header;  // pointer to the base address of the TCP packet
-    uint32_t Length; // length in bytes of the TCP packet, including the TCP header
+    tcphdr* Header{nullptr}; // pointer to the base address of the TCP packet
+    uint32_t Length{0};      // length in bytes of the TCP packet, including the TCP header
 };
 
 struct ConstTcpPacket {
-    const tcphdr* Header; // pointer to the base address of the TCP packet
-    uint32_t Length;      // length in bytes of the TCP packet, including the TCP header
+    const tcphdr* Header{nullptr}; // pointer to the base address of the TCP packet
+    uint32_t Length{0};            // length in bytes of the TCP packet, including the TCP header
 };
 
 /**

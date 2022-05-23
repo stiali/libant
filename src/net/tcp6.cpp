@@ -5,7 +5,7 @@ namespace ant {
 
 ConstTcpPacket LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t ipPacketLen)
 {
-    ConstTcpPacket packet{nullptr, 0};
+    ConstTcpPacket packet;
     if (unlikely(ipPacketLen <= sizeof(ip6_hdr))) {
         return packet;
     }

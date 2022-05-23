@@ -2,19 +2,9 @@
 #define LIBANT_INCLUDE_LIBANT_NET_UDP6_H_
 
 #include <netinet/ip6.h>
-#include <netinet/udp.h>
+#include <libant/net/udp_packet.h>
 
 namespace ant {
-
-struct UdpPacket {
-    udphdr* Header;  // pointer to the base address of the TCP packet
-    uint32_t Length; // length in bytes of the TCP packet, including the TCP header
-};
-
-struct ConstUdpPacket {
-    const udphdr* Header; // pointer to the base address of the TCP packet
-    uint32_t Length;      // length in bytes of the TCP packet, including the TCP header
-};
 
 /**
  * LocateUdpHeader returns, if ipPacket is a UDP packet, a pointer to the base address of the UDP packet.

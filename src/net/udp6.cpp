@@ -5,7 +5,7 @@ namespace ant {
 
 ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t ipPacketLen)
 {
-    ConstUdpPacket packet{nullptr, 0};
+    ConstUdpPacket packet;
     if (unlikely(ipPacketLen <= sizeof(ip6_hdr))) {
         return packet;
     }
