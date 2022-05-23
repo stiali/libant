@@ -15,7 +15,7 @@ namespace ant {
  *
  * @return true on success, false if the packet is invalid
  */
-bool ComputeAndSetChecksum(ip* packet, const size_t packetLen);
+bool ComputeAndSetChecksum(ip* packet, const uint32_t packetLen);
 
 /**
  * Compute and set checksum for a TCP packet over IPv4
@@ -26,7 +26,7 @@ bool ComputeAndSetChecksum(ip* packet, const size_t packetLen);
  *
  * @return true on success, false if the packet is invalid
  */
-bool ComputeAndSetChecksum(const ip* ipHeader, tcphdr* tcpHeader, const size_t tcpPacketLen);
+bool ComputeAndSetChecksum(const ip* ipHeader, tcphdr* tcpHeader, const uint32_t tcpPacketLen);
 
 } // namespace ant
 

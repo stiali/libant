@@ -4,7 +4,7 @@
 
 namespace ant {
 
-bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, tcphdr* tcpHeader, const size_t tcpPacketLen)
+bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, tcphdr* tcpHeader, const uint32_t tcpPacketLen)
 {
     if (unlikely(tcpPacketLen < sizeof(tcphdr))) {
         return false;
@@ -28,7 +28,7 @@ bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, tcphdr* tcpHeader, const siz
     return true;
 }
 
-bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, udphdr* udpHeader, const size_t udpPacketLen)
+bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, udphdr* udpHeader, const uint32_t udpPacketLen)
 {
     if (unlikely(udpPacketLen < sizeof(udphdr))) {
         return false;

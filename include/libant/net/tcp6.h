@@ -19,20 +19,20 @@ struct ConstTcpPacket {
 /**
  * LocateTcpHeader returns, if ipPacket is a TCP packet, a pointer to the base address of the TCP packet.
  * @param ipPacket pointer to an IPv6 packet
- * @param payloadLength length of the payload, not including the IPv6 header
+ * @param ipPacketLen length of the IPv6 packet, including the IPv6 header
  * @return Pointer to the base address of a TCP packet, or nullptr if it's not a TCP packet.
  */
-ConstTcpPacket LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength);
+ConstTcpPacket LocateTcpHeader(const ip6_hdr* ipPacket, uint32_t ipPacketLen);
 
 /**
  * LocateTcpHeader returns, if ipPacket is a TCP packet, a pointer to the base address of the TCP packet.
  * @param ipPacket pointer to an IPv6 packet
- * @param payloadLength length of the payload, not including the IPv6 header
+ * @param ipPacketLen length of the IPv6 packet, including the IPv6 header
  * @return Pointer to the base address of a TCP packet, or nullptr if it's not a TCP packet.
  */
-inline TcpPacket LocateTcpHeader(ip6_hdr* ipPacket, uint32_t payloadLength)
+inline TcpPacket LocateTcpHeader(ip6_hdr* ipPacket, uint32_t ipPacketLen)
 {
-    auto packet = LocateTcpHeader(const_cast<const ip6_hdr*>(ipPacket), payloadLength);
+    auto packet = LocateTcpHeader(const_cast<const ip6_hdr*>(ipPacket), ipPacketLen);
     return TcpPacket{const_cast<tcphdr*>(packet.Header), packet.Length};
 }
 

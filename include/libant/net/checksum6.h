@@ -17,7 +17,7 @@ namespace ant {
  *
  * @return true on success, false if the packet is invalid
  */
-bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, tcphdr* tcpHeader, const size_t tcpPacketLen);
+bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, tcphdr* tcpHeader, const uint32_t tcpPacketLen);
 
 /**
  * Compute and set checksum for a UDP packet over IPv6
@@ -28,7 +28,7 @@ bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, tcphdr* tcpHeader, const siz
  *
  * @return true on success, false if the packet is invalid
  */
-bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, udphdr* udpHeader, const size_t udpPacketLen);
+bool ComputeAndSetChecksum(const ip6_hdr* ipHeader, udphdr* udpHeader, const uint32_t udpPacketLen);
 
 } // namespace ant
 

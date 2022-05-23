@@ -1,43 +1,48 @@
+#include <libant/utils/likely.h>
 #include <libant/net/udp6.h>
 
 namespace ant {
 
-ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength)
+ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t ipPacketLen)
 {
     ConstUdpPacket packet{nullptr, 0};
+    if (unlikely(ipPacketLen <= sizeof(ip6_hdr))) {
+        return packet;
+    }
 
+    ipPacketLen -= sizeof(ip6_hdr);
     auto basePtr = reinterpret_cast<const uint8_t*>(ipPacket) + sizeof(ip6_hdr);
     auto nextHeader = ipPacket->ip6_nxt;
     for (;;) {
         switch (nextHeader) {
         case IPPROTO_UDP:
-            if (payloadLength >= sizeof(udphdr)) {
+            if (ipPacketLen >= sizeof(udphdr)) {
                 packet.Header = reinterpret_cast<const udphdr*>(basePtr);
-                packet.Length = payloadLength;
+                packet.Length = ipPacketLen;
             }
             return packet;
         case IPPROTO_HOPOPTS:
         case IPPROTO_ROUTING:
         case IPPROTO_DSTOPTS:
-            if (payloadLength > 8) {
+            if (ipPacketLen > 8) {
                 auto ext = reinterpret_cast<const ip6_ext*>(basePtr);
                 auto extLen = static_cast<uint32_t>(ext->ip6e_len) * 8 + 8;
-                if (payloadLength > extLen) {
+                if (ipPacketLen > extLen) {
                     nextHeader = ext->ip6e_nxt;
                     basePtr += extLen;
-                    payloadLength -= extLen;
+                    ipPacketLen -= extLen;
                     continue;
                 }
             }
             return packet;
         case IPPROTO_AH:
-            if (payloadLength > 8) {
+            if (ipPacketLen > 8) {
                 auto ext = reinterpret_cast<const ip6_ext*>(basePtr);
                 auto extLen = static_cast<uint32_t>(ext->ip6e_len) * 4 + 8;
-                if (payloadLength > extLen) {
+                if (ipPacketLen > extLen) {
                     nextHeader = ext->ip6e_nxt;
                     basePtr += extLen;
-                    payloadLength -= extLen;
+                    ipPacketLen -= extLen;
                     continue;
                 }
             }

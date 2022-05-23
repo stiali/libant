@@ -19,20 +19,20 @@ struct ConstUdpPacket {
 /**
  * LocateUdpHeader returns, if ipPacket is a UDP packet, a pointer to the base address of the UDP packet.
  * @param ipPacket pointer to an IPv6 packet
- * @param payloadLength length of the payload, not including the IPv6 header
+ * @param ipPacketLen length of the IPv6 packet, including the IPv6 header
  * @return Pointer to the base address of a UDP packet, or nullptr if it's not a UDP packet.
  */
-ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t payloadLength);
+ConstUdpPacket LocateUdpHeader(const ip6_hdr* ipPacket, uint32_t ipPacketLen);
 
 /**
  * LocateUdpHeader returns, if ipPacket is a UDP packet, a pointer to the base address of the UDP packet.
  * @param ipPacket pointer to an IPv6 packet
- * @param payloadLength length of the payload, not including the IPv6 header
+ * @param ipPacketLen length of the IPv6 packet, including the IPv6 header
  * @return Pointer to the base address of a UDP packet, or nullptr if it's not a UDP packet.
  */
-inline UdpPacket LocateUdpHeader(ip6_hdr* ipPacket, uint32_t payloadLength)
+inline UdpPacket LocateUdpHeader(ip6_hdr* ipPacket, uint32_t ipPacketLen)
 {
-    auto packet = LocateUdpHeader(const_cast<const ip6_hdr*>(ipPacket), payloadLength);
+    auto packet = LocateUdpHeader(const_cast<const ip6_hdr*>(ipPacket), ipPacketLen);
     return UdpPacket{const_cast<udphdr*>(packet.Header), packet.Length};
 }
 

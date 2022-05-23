@@ -7,14 +7,14 @@
 
 namespace ant {
 
-bool ComputeAndSetChecksum(ip* packet, const size_t packetLen)
+bool ComputeAndSetChecksum(ip* packet, const uint32_t packetLen)
 {
     if (unlikely(packetLen < sizeof(ip))) {
         return false;
     }
 
-    const auto ipHeaderLen = static_cast<size_t>(packet->ip_hl) << 2;
-    const size_t ipPacketLen = ntohs(packet->ip_len);
+    const auto ipHeaderLen = static_cast<uint32_t>(packet->ip_hl) << 2;
+    const uint32_t ipPacketLen = ntohs(packet->ip_len);
     if (unlikely(packetLen < ipHeaderLen || packetLen != ipPacketLen)) {
         return false;
     }
@@ -51,7 +51,7 @@ bool ComputeAndSetChecksum(ip* packet, const size_t packetLen)
     return ret;
 }
 
-bool ComputeAndSetChecksum(const ip* ipHeader, tcphdr* tcpHeader, const size_t tcpPacketLen)
+bool ComputeAndSetChecksum(const ip* ipHeader, tcphdr* tcpHeader, const uint32_t tcpPacketLen)
 {
     if (unlikely(tcpPacketLen < sizeof(tcphdr))) {
         return false;
