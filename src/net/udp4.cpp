@@ -1,4 +1,3 @@
-#include <libant/utils/likely.h>
 #include <libant/net/udp4.h>
 
 namespace ant {
@@ -6,7 +5,7 @@ namespace ant {
 ConstUdpPacket LocateUdpHeader(const ip* ipPacket, uint32_t ipPacketLen)
 {
     ConstUdpPacket packet;
-    if (unlikely(ipPacketLen <= sizeof(ip) || ipPacket->ip_p != IPPROTO_UDP)) {
+    if (ipPacketLen <= sizeof(ip) || ipPacket->ip_p != IPPROTO_UDP) {
         return packet;
     }
 
