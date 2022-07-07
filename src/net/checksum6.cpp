@@ -1,3 +1,4 @@
+#include <netinet/in.h>
 #include <libant/utils/likely.h>
 #include <libant/checksum/checksum.h>
 #include <libant/net/checksum6.h>

@@ -1,3 +1,4 @@
+#include <netinet/in.h>
 #include <libant/utils/likely.h>
 #include <libant/net/udp6.h>
 
