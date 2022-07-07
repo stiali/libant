@@ -10,7 +10,8 @@ file(GLOB_RECURSE LIBANT_SOURCE_FILES src/*.cpp)
 if (FILE_SYSTEM_NOT_SUPPORTED)
     list(REMOVE_ITEM LIBANT_SOURCE_FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/src/file_utils/file_purger.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/src/logger/logger.cpp)
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/logger/logger.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/logger/fmt/format.cpp)
 endif ()
 
 if (OPENSSL_NOT_SUPPORTED)
