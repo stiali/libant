@@ -14,19 +14,17 @@ if (FILE_SYSTEM_NOT_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/src/logger/fmt/format.cpp)
 endif ()
 
-if (OPENSSL_NOT_SUPPORTED)
+# OpenSSL
+find_package(OpenSSL REQUIRED)
+if (OpenSSL_FOUND)
+    message(STATUS "OpenSSL found")
+    include_directories(${OPENSSL_INCLUDE_DIR})
+else ()
+    message(STATUS "OpenSSL not found")
     list(REMOVE_ITEM LIBANT_SOURCE_FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/src/hash/md5.cpp)
-else()
-    # OpenSSL
-    find_package(OpenSSL REQUIRED)
-    if (OpenSSL_FOUND)
-        message(STATUS "OpenSSL library found")
-        include_directories(${OPENSSL_INCLUDE_DIR})
-    else ()
-        message(FATAL_ERROR "OpenSSL library is needed but can‘t be found")
-    endif ()
-endif()
+endif ()
+
 
 # include search dir
 include_directories(
