@@ -15,7 +15,7 @@ if (FILE_SYSTEM_NOT_SUPPORTED)
 endif ()
 
 # OpenSSL
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL)
 if (OpenSSL_FOUND)
     message(STATUS "OpenSSL found")
     include_directories(${OPENSSL_INCLUDE_DIR})
