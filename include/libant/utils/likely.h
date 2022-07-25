@@ -8,8 +8,8 @@
 
 #else
 
-#define likely(cond_)
-#define unlikely(cond_)
+#define likely(cond_) cond_
+#define unlikely(cond_) cond_
 
 #endif
 
