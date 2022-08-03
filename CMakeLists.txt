@@ -27,8 +27,11 @@ else ()
 endif ()
 
 find_package(RdKafka)
-if (RdKafka_FOUND)
-else ()
+if (NOT RdKafka_FOUND)
+    message(STATUS "RdKafka not found")
+    list(REMOVE_ITEM LIBANT_SOURCE_FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/kafka/consumer.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/kafka/producer.cpp)
 endif ()
 
 # include search dir
