@@ -45,7 +45,7 @@
 #ifndef LIBANT_INCLUDE_LIBANT_INTERPROCESS_CONTAINERS_SHM_CIRCULAR_BUF_QUEUE_H_
 #define LIBANT_INCLUDE_LIBANT_INTERPROCESS_CONTAINERS_SHM_CIRCULAR_BUF_QUEUE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 #ifdef WIN32
@@ -61,16 +61,16 @@ namespace ant {
  * 			with only one producer and one consumer, no matter they are
  * 			within the same/different thread/process.
  */
-class shm_circular_queue {
+class ShmCircularBufQueue {
 public:
     /**
 	 * @brief Default constructor. Only do object initialization here,
 	 * 			shared memory is not allocated.
-	 * 			To make the shm_circular_queue object work properly
+	 * 			To make the ShmCircularBufQueue object work properly
 	 * 			as a circular queue, call create or attach.
 	 * @see create, attach
 	 */
-    shm_circular_queue()
+    ShmCircularBufQueue()
     {
         cq_ = 0;
 #ifdef WIN32
@@ -84,13 +84,13 @@ public:
 	 * 			from the system use destroy().
 	 * @note Under Windows, the shared memory will be remove after program termination.
 	 */
-    ~shm_circular_queue()
+    ~ShmCircularBufQueue()
     {
         detach();
     }
 
     /**
-	 * @brief Allocates shared memory for shm_circular_queue.
+	 * @brief Allocates shared memory for ShmCircularBufQueue.
 	 * 			Failed if the named shared memory already exists.
 	 * @param name Name of the shared memory, must be less than 64 bytes.
 	 * 				Failed if the named shared memory already exists.
@@ -143,7 +143,7 @@ public:
 	 */
     bool push(const void* data, uint32_t len);
     /**
-	 * @brief Returns true if the %shm_circular_queue is empty.
+	 * @brief Returns true if the %ShmCircularBufQueue is empty.
 	 * @return true if empty, false otherwise.
 	 */
     bool empty() const
@@ -186,8 +186,8 @@ private:
 
 private:
     // forbid copy and assignment
-    shm_circular_queue(const shm_circular_queue&);
-    shm_circular_queue& operator=(const shm_circular_queue&);
+    ShmCircularBufQueue(const ShmCircularBufQueue&);
+    ShmCircularBufQueue& operator=(const ShmCircularBufQueue&);
 
     shm_block* head() const
     {

@@ -18,7 +18,7 @@ using namespace std;
 
 namespace ant {
 
-bool shm_circular_queue::create(const string& name, uint32_t cq_size, uint32_t data_max_sz)
+bool ShmCircularBufQueue::create(const string& name, uint32_t cq_size, uint32_t data_max_sz)
 {
     assert((cq_size < k_shm_cq_max_sz) && (cq_size >= (data_max_sz + sizeof(shm_block))));
 
@@ -73,7 +73,7 @@ bool shm_circular_queue::create(const string& name, uint32_t cq_size, uint32_t d
     return true;
 }
 
-bool shm_circular_queue::destroy()
+bool ShmCircularBufQueue::destroy()
 {
 #ifndef WIN32
     return ((shm_unlink(cq_->name) == 0) && detach());
@@ -83,7 +83,7 @@ bool shm_circular_queue::destroy()
 #endif
 }
 
-bool shm_circular_queue::attach(const string& name)
+bool ShmCircularBufQueue::attach(const string& name)
 {
 #ifndef WIN32
     int shmfd = shm_open(name.c_str(), O_RDWR, 0);
@@ -128,7 +128,7 @@ bool shm_circular_queue::attach(const string& name)
 #endif
 }
 
-bool shm_circular_queue::detach()
+bool ShmCircularBufQueue::detach()
 {
     if (cq_) {
 #ifndef WIN32
@@ -140,7 +140,7 @@ bool shm_circular_queue::detach()
     return true;
 }
 
-uint32_t shm_circular_queue::pop(void** data)
+uint32_t ShmCircularBufQueue::pop(void** data)
 {
     // queue is empty
     if (empty()) {
@@ -159,7 +159,7 @@ uint32_t shm_circular_queue::pop(void** data)
     return cur_mb->len - sizeof(shm_block);
 }
 
-bool shm_circular_queue::push(const void* data, uint32_t len)
+bool ShmCircularBufQueue::push(const void* data, uint32_t len)
 {
     assert((len > 0) && (len <= cq_->elem_max_sz - sizeof(shm_block)));
 
@@ -175,7 +175,7 @@ bool shm_circular_queue::push(const void* data, uint32_t len)
     return false;
 }
 
-bool shm_circular_queue::align_tail(uint32_t len)
+bool ShmCircularBufQueue::align_tail(uint32_t len)
 {
     uint32_t tail_pos = cq_->tail;
     uint32_t surplus = cq_->shm_size - tail_pos;
