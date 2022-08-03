@@ -18,16 +18,16 @@ using namespace std;
 
 namespace ant {
 
-bool ShmCircularBufQueue::create(const string& name, uint32_t cq_size, uint32_t data_max_sz)
+bool ShmCircularBufQueue::Create(const string& name, uint32_t cq_size, uint32_t data_max_sz)
 {
-    assert((cq_size < k_shm_cq_max_sz) && (cq_size >= (data_max_sz + sizeof(shm_block))));
+    assert((cq_size < kShmCircularQueueMaxSz) && (cq_size >= (data_max_sz + sizeof(ShmBlock))));
 
-    if (name.size() >= k_shmq_name_sz) {
+    if (name.size() >= kShmNameSz) {
         errno = ENAMETOOLONG;
         return false;
     }
 
-    uint32_t size = cq_size + sizeof(shm_cq);
+    uint32_t size = cq_size + sizeof(ShmCQ);
 
 #ifndef WIN32
     int shmfd = shm_open(name.c_str(), O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
@@ -42,7 +42,7 @@ bool ShmCircularBufQueue::create(const string& name, uint32_t cq_size, uint32_t 
         return false;
     }
 
-    shm_cq* cq = reinterpret_cast<shm_cq*>(mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0));
+    ShmCQ* cq = reinterpret_cast<ShmCQ*>(mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0));
     close(shmfd);
     if (cq == MAP_FAILED) {
         shm_unlink(name.c_str());
@@ -54,7 +54,7 @@ bool ShmCircularBufQueue::create(const string& name, uint32_t cq_size, uint32_t 
         return false;
     }
 
-    shm_cq* cq = reinterpret_cast<shm_cq*>(MapViewOfFile(mapfile_, FILE_MAP_ALL_ACCESS, 0, 0, 0));
+    ShmCQ* cq = reinterpret_cast<ShmCQ*>(MapViewOfFile(mapfile_, FILE_MAP_ALL_ACCESS, 0, 0, 0));
     if (!cq) {
         CloseHandle(mapfile_);
         mapfile_ = 0;
@@ -64,26 +64,26 @@ bool ShmCircularBufQueue::create(const string& name, uint32_t cq_size, uint32_t 
 
     cq_ = cq;
     // init shared-memory circular queue
-    cq_->head = sizeof(shm_cq);
-    cq_->tail = sizeof(shm_cq);
-    cq_->shm_size = size;
-    cq_->elem_max_sz = data_max_sz + sizeof(shm_block);
-    strcpy(cq_->name, name.c_str());
+    cq_->Head = sizeof(ShmCQ);
+    cq_->Tail = sizeof(ShmCQ);
+    cq_->ShmSize = size;
+    cq_->ElemMaxSize = data_max_sz + sizeof(ShmBlock);
+    strcpy(cq_->Name, name.c_str());
 
     return true;
 }
 
-bool ShmCircularBufQueue::destroy()
+bool ShmCircularBufQueue::Destroy()
 {
 #ifndef WIN32
-    return ((shm_unlink(cq_->name) == 0) && detach());
+    return ((shm_unlink(cq_->Name) == 0) && Detach());
 #else
     // no easy way to remove shared memory under windows system
     return (CloseHandle(mapfile_) && detach());
 #endif
 }
 
-bool ShmCircularBufQueue::attach(const string& name)
+bool ShmCircularBufQueue::Attach(const string& name)
 {
 #ifndef WIN32
     int shmfd = shm_open(name.c_str(), O_RDWR, 0);
@@ -91,19 +91,19 @@ bool ShmCircularBufQueue::attach(const string& name)
         return false;
     }
 
-    // this call of mmap is used to get cq->shm_size only
-    shm_cq* cq = reinterpret_cast<shm_cq*>(mmap(0, sizeof(shm_cq), PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0));
+    // this call of mmap is used to get cq->ShmSize only
+    ShmCQ* cq = reinterpret_cast<ShmCQ*>(mmap(0, sizeof(ShmCQ), PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0));
     if (cq == MAP_FAILED) {
         close(shmfd);
         return false;
     }
 
     // used to mmap shmfd again
-    uint32_t sz = cq->shm_size;
+    uint32_t sz = cq->ShmSize;
     // unmap cq
-    munmap(cq, sizeof(shm_cq));
-    // mmap again with the real length of shm_cq
-    cq = reinterpret_cast<shm_cq*>(mmap(0, sz, PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0));
+    munmap(cq, sizeof(ShmCQ));
+    // mmap again with the real length of ShmCQ
+    cq = reinterpret_cast<ShmCQ*>(mmap(0, sz, PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0));
     close(shmfd);
     if (cq == MAP_FAILED) {
         return false;
@@ -117,7 +117,7 @@ bool ShmCircularBufQueue::attach(const string& name)
         return false;
     }
 
-    shm_cq* cq = reinterpret_cast<shm_cq*>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0));
+    ShmCQ* cq = reinterpret_cast<ShmCQ*>(MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0));
     CloseHandle(hMapFile);
     if (cq) {
         cq_ = cq;
@@ -128,11 +128,11 @@ bool ShmCircularBufQueue::attach(const string& name)
 #endif
 }
 
-bool ShmCircularBufQueue::detach()
+bool ShmCircularBufQueue::Detach()
 {
     if (cq_) {
 #ifndef WIN32
-        return (munmap(cq_, cq_->shm_size) == 0);
+        return (munmap(cq_, cq_->ShmSize) == 0);
 #else
         return UnmapViewOfFile(cq_);
 #endif
@@ -140,56 +140,56 @@ bool ShmCircularBufQueue::detach()
     return true;
 }
 
-uint32_t ShmCircularBufQueue::pop(void** data)
+uint32_t ShmCircularBufQueue::Pop(void** data)
 {
     // queue is empty
-    if (empty()) {
+    if (Empty()) {
         return 0;
     }
-    align_head();
+    alignHead();
     // queue is empty
-    if (empty()) {
+    if (Empty()) {
         return 0;
     }
 
-    shm_block* cur_mb = head();
-    assert(cur_mb->len <= cq_->elem_max_sz);
-    *data = cur_mb->data;
-    cq_->head += cur_mb->len;
-    return cur_mb->len - sizeof(shm_block);
+    ShmBlock* cur_mb = head();
+    assert(cur_mb->Len <= cq_->ElemMaxSize);
+    *data = cur_mb->Data;
+    cq_->Head += cur_mb->Len;
+    return cur_mb->Len - sizeof(ShmBlock);
 }
 
-bool ShmCircularBufQueue::push(const void* data, uint32_t len)
+bool ShmCircularBufQueue::Push(const void* data, uint32_t len)
 {
-    assert((len > 0) && (len <= cq_->elem_max_sz - sizeof(shm_block)));
+    assert((len > 0) && (len <= cq_->ElemMaxSize - sizeof(ShmBlock)));
 
-    uint32_t elem_len = len + sizeof(shm_block);
-    if (align_tail(elem_len)) {
-        shm_block* next_mb = tail();
-        next_mb->len = elem_len;
-        memcpy(next_mb->data, data, len);
-        cq_->tail += elem_len;
+    uint32_t elem_len = len + sizeof(ShmBlock);
+    if (alignTail(elem_len)) {
+        ShmBlock* next_mb = tail();
+        next_mb->Len = elem_len;
+        memcpy(next_mb->Data, data, len);
+        cq_->Tail += elem_len;
         return true;
     }
 
     return false;
 }
 
-bool ShmCircularBufQueue::align_tail(uint32_t len)
+bool ShmCircularBufQueue::alignTail(uint32_t len)
 {
-    uint32_t tail_pos = cq_->tail;
-    uint32_t surplus = cq_->shm_size - tail_pos;
+    uint32_t tail_pos = cq_->Tail;
+    uint32_t surplus = cq_->ShmSize - tail_pos;
     if (surplus >= len) {
-        return push_wait(len);
+        return pushWait(len);
     }
 
-    if (tail_align_wait()) {
-        if (surplus >= sizeof(shm_block)) {
-            shm_block* pad = tail();
-            pad->len = 0xFFFFFFFF;
+    if (tailAlignWait()) {
+        if (surplus >= sizeof(ShmBlock)) {
+            ShmBlock* pad = tail();
+            pad->Len = 0xFFFFFFFF;
         }
-        cq_->tail = sizeof(shm_cq);
-        return push_wait(len);
+        cq_->Tail = sizeof(ShmCQ);
+        return pushWait(len);
     }
 
     return false;

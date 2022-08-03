@@ -67,8 +67,8 @@ public:
 	 * @brief Default constructor. Only do object initialization here,
 	 * 			shared memory is not allocated.
 	 * 			To make the ShmCircularBufQueue object work properly
-	 * 			as a circular queue, call create or attach.
-	 * @see create, attach
+	 * 			as a circular queue, call Create or Attach.
+	 * @see Create, Attach
 	 */
     ShmCircularBufQueue()
     {
@@ -81,12 +81,12 @@ public:
     /**
 	 * @brief Detaches from the circular queue. The shared memory allocated is not remove
 	 * 			from the system and can be attached again. To remove the shared memory
-	 * 			from the system use destroy().
+	 * 			from the system, call Destroy().
 	 * @note Under Windows, the shared memory will be remove after program termination.
 	 */
     ~ShmCircularBufQueue()
     {
-        detach();
+        Detach();
     }
 
     /**
@@ -94,119 +94,125 @@ public:
 	 * 			Failed if the named shared memory already exists.
 	 * @param name Name of the shared memory, must be less than 64 bytes.
 	 * 				Failed if the named shared memory already exists.
-	 * @param cq_size Size of the circular queue, must be 100 bytes greater
-	 * 					than `data_max_sz` and less than 2,000,000,000 bytes.
-	 * @param data_max_sz Max size in bytes allowed for data pushed into the circular queue.
+	 * @param cqSize Size of the circular queue, must be 100 bytes greater
+	 * 					than `dataMaxSz` and less than 2,000,000,000 bytes.
+	 * @param dataMaxSz Max size in bytes allowed for data pushed into the circular queue.
 	 * @return true on success, false on failure.
-	 * @see destroy, attach
+	 * @see Destroy, Attach
 	 */
-    bool create(const std::string& name, uint32_t cq_size, uint32_t data_max_sz);
+    bool Create(const std::string& name, uint32_t cqSize, uint32_t dataMaxSz);
+
     /**
 	 * @brief Destroy circular queue and remove the shared memory from the system.
 	 * @return true on success, false on failure.
-	 * @see create
+	 * @see Create
 	 */
-    bool destroy();
+    bool Destroy();
+
     /**
 	 * @brief Attaches to an already created shared memory circular queue.
 	 * @param name Name of the shared memory.
 	 * @return true on success, false on failure.
-	 * @note You must make sure that create() had returned successfully
+	 * @note You must make sure that Create() had returned successfully
 	 *			before calling this function.
-	 * @see create, detach
+	 * @see Create, Detach
 	 */
-    bool attach(const std::string& name);
+    bool Attach(const std::string& name);
+
     /**
-	 * @brief Detaches from the circular queue. The shared memory allocated is not remove
+	 * @brief Detaches from the circular queue. The shared memory allocated is not removed
 	 * 			from the system and can be attached again. To remove the shared memory
-	 * 			from the system use destroy().
+	 * 			from the system, call Destroy().
 	 * @return true on success, false on failure.
 	 * @note Under Windows, the shared memory will be remove after program termination.
-	 * @see attach, destroy
+	 * @see Attach, Destroy
 	 */
-    bool detach();
+    bool Detach();
+
     /**
 	 * @brief Pops a data element from the circular queue.
 	 * 			If success, `*data` will point to the popped data.
 	 * 			You DON'T need to free/delete `*data`.
 	 * @param data If success, `*data` will point to the popped data.
-	 * @return Length of the popped data on success, 0 if the queue is empty.
-	 * @see push
+	 * @return Length of the popped data on success, 0 if the queue is Empty.
+	 * @see Push
 	 */
-    uint32_t pop(void** data);
+    uint32_t Pop(void** data);
+
     /**
 	 * @brief Pushed a data element into the circular queue.
 	 * @param data data to be pushed into the circular queue.
 	 * @param len Length of the data to be pushed.
 	 * @return true on success, false on failure (the queue is full).
-	 * @see pop
+	 * @see Pop
 	 */
-    bool push(const void* data, uint32_t len);
+    bool Push(const void* data, uint32_t len);
+
     /**
-	 * @brief Returns true if the %ShmCircularBufQueue is empty.
-	 * @return true if empty, false otherwise.
+	 * @brief Returns true if the ShmCircularBufQueue is Empty.
+	 * @return true if Empty, false otherwise.
 	 */
-    bool empty() const
+    bool Empty() const
     {
-        return (cq_->head == cq_->tail);
+        return (cq_->Head == cq_->Tail);
     }
 
 private:
     /*! 64: Max size in bytes for name of the shared memory, including '\0' */
-    static const uint32_t k_shmq_name_sz = 64;
+    static const uint32_t kShmNameSz = 64;
     /* shared memory circular queue max size */
-    static const uint32_t k_shm_cq_max_sz = 2000000000;
+    static const uint32_t kShmCircularQueueMaxSz = 2000000000;
 
 private:
     /**
-	 * @struct shm_cq
+	 * @struct ShmCQ
 	 * @brief Head of the circular queue
 	 */
-    struct shm_cq {
-        /*! Offset for head of the circular queue */
-        volatile uint32_t head;
-        /*! Offset for tail of the circular queue */
-        volatile uint32_t tail;
+    struct ShmCQ {
+        /*! Offset for Head of the circular queue */
+        volatile uint32_t Head;
+        /*! Offset for Tail of the circular queue */
+        volatile uint32_t Tail;
         /*! Size of the allocated shared memory in bytes */
-        uint32_t shm_size;
+        uint32_t ShmSize;
         /*! Max size in bytes allowed for data pushed into the circular queue */
-        uint32_t elem_max_sz;
+        uint32_t ElemMaxSize;
         /*! Name of the shared memory */
-        char name[k_shmq_name_sz];
+        char Name[kShmNameSz];
     };
 
 #pragma pack(1)
 
-    struct shm_block {
-        uint32_t len;
-        uint8_t data[];
+    struct ShmBlock {
+        uint32_t Len;
+        uint8_t Data[];
     };
 
 #pragma pack()
 
 private:
     // forbid copy and assignment
-    ShmCircularBufQueue(const ShmCircularBufQueue&);
-    ShmCircularBufQueue& operator=(const ShmCircularBufQueue&);
+    ShmCircularBufQueue(const ShmCircularBufQueue&) = delete;
+    ShmCircularBufQueue& operator=(const ShmCircularBufQueue&) = delete;
 
-    shm_block* head() const
+    ShmBlock* head() const
     {
-        return reinterpret_cast<shm_block*>(reinterpret_cast<char*>(cq_) + cq_->head);
+        return reinterpret_cast<ShmBlock*>(reinterpret_cast<char*>(cq_) + cq_->Head);
     }
 
-    shm_block* tail() const
+    ShmBlock* tail() const
     {
-        return reinterpret_cast<shm_block*>(reinterpret_cast<char*>(cq_) + cq_->tail);
+        return reinterpret_cast<ShmBlock*>(reinterpret_cast<char*>(cq_) + cq_->Tail);
     }
 
-    bool push_wait(uint32_t len) const
+    bool pushWait(uint32_t len) const
     {
-        uint32_t tail = cq_->tail;
+        uint32_t tail = cq_->Tail;
         for (int cnt = 0; cnt != 10; ++cnt) {
-            uint32_t head = cq_->head;
-            // q->elem_max_sz is added just to prevent overwriting
+            uint32_t head = cq_->Head;
+            // q->ElemMaxSize is added just to prevent overwriting
             // the buffer that might be referred to currently
-            if ((head <= tail) || (head >= (tail + len + cq_->elem_max_sz))) {
+            if ((head <= tail) || (head >= (tail + len + cq_->ElemMaxSize))) {
                 return true;
             }
 #ifndef WIN32
@@ -219,12 +225,12 @@ private:
         return false;
     }
 
-    bool tail_align_wait() const
+    bool tailAlignWait() const
     {
-        uint32_t tail = cq_->tail;
+        uint32_t tail = cq_->Tail;
         for (int cnt = 0; cnt != 10; ++cnt) {
-            uint32_t head = cq_->head;
-            if ((head > sizeof(shm_cq)) && (head <= tail)) {
+            uint32_t head = cq_->Head;
+            if ((head > sizeof(ShmCQ)) && (head <= tail)) {
                 return true;
             }
 #ifndef WIN32
@@ -237,23 +243,23 @@ private:
         return false;
     }
 
-    void align_head()
+    void alignHead()
     {
-        uint32_t head = cq_->head;
-        if (head < cq_->tail) {
+        uint32_t head = cq_->Head;
+        if (head < cq_->Tail) {
             return;
         }
 
-        shm_block* pad = this->head();
-        if (((cq_->shm_size - head) < sizeof(shm_block)) || (pad->len == 0xFFFFFFFF)) {
-            cq_->head = sizeof(shm_cq);
+        ShmBlock* pad = this->head();
+        if (((cq_->ShmSize - head) < sizeof(ShmBlock)) || (pad->Len == 0xFFFFFFFF)) {
+            cq_->Head = sizeof(ShmCQ);
         }
     }
 
-    bool align_tail(uint32_t len);
+    bool alignTail(uint32_t len);
 
 private:
-    shm_cq* cq_;
+    ShmCQ* cq_;
 #ifdef WIN32
     HANDLE mapfile_;
 #endif
