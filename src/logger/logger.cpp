@@ -24,7 +24,11 @@ std::unique_ptr<Logger> gLogger;
 
 Logger::Logger(const Cfg& cfg)
     : logDir_(cfg.logDir_)
+#ifndef _WIN32
     , logPathPrefix_(!cfg.logDir_.empty() ? cfg.logDir_ + filesystem::path::preferred_separator + cfg.logFilenamePrefix_ : cfg.logFilenamePrefix_)
+#else
+    , logPathPrefix_(!cfg.logDir_.empty() ? cfg.logDir_ + '\\' + cfg.logFilenamePrefix_ : cfg.logFilenamePrefix_)
+#endif
     , logFileMaxSize_(cfg.logFileMaxSize_ ? cfg.logFileMaxSize_ * 1024 * 1024 : 0xFFFFFFFFFF000000)
     , controlFlags_(cfg.controlFlags_)
     , multiThreaded_(cfg.enableThreadMutex_)
@@ -50,8 +54,13 @@ Logger::Impl::Impl(const Logger* parent, const std::string& filenamePrefix, LogL
     : parent_(parent)
     , level_(level)
     , enableMutex_(enableMutex)
+#ifndef _WIN32
     , symlink_((!parent_->logDir_.empty() ? parent_->logDir_ + filesystem::path::preferred_separator : "") + sLogLevelNames[level] + "." + filenamePrefix +
                ".log")
+#else
+    , symlink_((!parent_->logDir_.empty() ? parent_->logDir_ + '\\' : "") + sLogLevelNames[level] + "." + filenamePrefix +
+               ".log")
+#endif
 {
 }
 
@@ -109,8 +118,12 @@ bool Logger::Impl::log(const tm& tmNow, uint32_t microSeconds, const string& con
         return true;
     }
 
+#ifdef _WIN32
+    out_.close();
+#else
     close(outFD_);
     outFD_ = -1;
+#endif
     return false;
 }
 
