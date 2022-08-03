@@ -1,6 +1,5 @@
 #include <cassert>
 #include <cerrno>
-#include <cstdlib>
 #include <cstring>
 
 #ifndef WIN32
@@ -8,7 +7,6 @@
 #include <fcntl.h> /* For O_* constants */
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 
 #endif
 
@@ -18,16 +16,16 @@ using namespace std;
 
 namespace ant {
 
-bool ShmCircularBufQueue::Create(const string& name, uint32_t cq_size, uint32_t data_max_sz)
+bool ShmCircularBufQueue::Create(const string& name, uint32_t cqSize, uint32_t dataMaxSz)
 {
-    assert((cq_size < kShmCircularQueueMaxSz) && (cq_size >= (data_max_sz + sizeof(ShmBlock))));
+    assert((cqSize < kShmCircularQueueMaxSz) && (cqSize >= (dataMaxSz + sizeof(ShmBlock))));
 
     if (name.size() >= kShmNameSz) {
         errno = ENAMETOOLONG;
         return false;
     }
 
-    uint32_t size = cq_size + sizeof(ShmCQ);
+    uint32_t size = cqSize + sizeof(ShmCQ);
 
 #ifndef WIN32
     int shmfd = shm_open(name.c_str(), O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
@@ -67,7 +65,7 @@ bool ShmCircularBufQueue::Create(const string& name, uint32_t cq_size, uint32_t 
     cq_->Head = sizeof(ShmCQ);
     cq_->Tail = sizeof(ShmCQ);
     cq_->ShmSize = size;
-    cq_->ElemMaxSize = data_max_sz + sizeof(ShmBlock);
+    cq_->ElemMaxSize = dataMaxSz + sizeof(ShmBlock);
     strcpy(cq_->Name, name.c_str());
 
     return true;
@@ -152,23 +150,23 @@ uint32_t ShmCircularBufQueue::Pop(void** data)
         return 0;
     }
 
-    ShmBlock* cur_mb = head();
-    assert(cur_mb->Len <= cq_->ElemMaxSize);
-    *data = cur_mb->Data;
-    cq_->Head += cur_mb->Len;
-    return cur_mb->Len - sizeof(ShmBlock);
+    ShmBlock* curMB = head();
+    assert(curMB->Len <= cq_->ElemMaxSize);
+    *data = curMB->Data;
+    cq_->Head += curMB->Len;
+    return curMB->Len - sizeof(ShmBlock);
 }
 
 bool ShmCircularBufQueue::Push(const void* data, uint32_t len)
 {
     assert((len > 0) && (len <= cq_->ElemMaxSize - sizeof(ShmBlock)));
 
-    uint32_t elem_len = len + sizeof(ShmBlock);
-    if (alignTail(elem_len)) {
-        ShmBlock* next_mb = tail();
-        next_mb->Len = elem_len;
-        memcpy(next_mb->Data, data, len);
-        cq_->Tail += elem_len;
+    uint32_t elemLen = len + sizeof(ShmBlock);
+    if (alignTail(elemLen)) {
+        ShmBlock* nextMB = tail();
+        nextMB->Len = elemLen;
+        memcpy(nextMB->Data, data, len);
+        cq_->Tail += elemLen;
         return true;
     }
 
@@ -177,8 +175,8 @@ bool ShmCircularBufQueue::Push(const void* data, uint32_t len)
 
 bool ShmCircularBufQueue::alignTail(uint32_t len)
 {
-    uint32_t tail_pos = cq_->Tail;
-    uint32_t surplus = cq_->ShmSize - tail_pos;
+    uint32_t tailPos = cq_->Tail;
+    uint32_t surplus = cq_->ShmSize - tailPos;
     if (surplus >= len) {
         return pushWait(len);
     }
