@@ -3,6 +3,7 @@ project(libant)
 
 set(CMAKE_CXX_STANDARD 17)
 set(BIN_OUTPUT_DIR ${PROJECT_SOURCE_DIR}/bin)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 option(BUILD_TEST_CASES "building test cases" OFF)
 
@@ -25,6 +26,10 @@ else ()
             ${CMAKE_CURRENT_SOURCE_DIR}/src/hash/md5.cpp)
 endif ()
 
+find_package(RdKafka)
+if (RdKafka_FOUND)
+else ()
+endif ()
 
 # include search dir
 include_directories(
