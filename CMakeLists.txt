@@ -13,11 +13,6 @@ if (FILE_SYSTEM_NOT_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/src/logger/logger.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/logger/fmt/format.cpp)
 endif ()
-if (WIN32)
-    file(GLOB_RECURSE NON_WIN_SRC_FILES src/net/*.cpp)
-    list(REMOVE_ITEM LIBANT_SOURCE_FILES
-            ${NON_WIN_SRC_FILES})
-endif()
 
 # OpenSSL
 find_package(OpenSSL)

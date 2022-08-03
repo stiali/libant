@@ -1,8 +1,13 @@
 #ifndef LIBANT_INCLUDE_LIBANT_NET_TCP6_H_
 #define LIBANT_INCLUDE_LIBANT_NET_TCP6_H_
 
+#ifndef _WIN32
 #include <netinet/ip6.h>
 #include <netinet/tcp.h>
+#else
+#include <libant/net/detail/ip6.h>
+#include <libant/net/detail/tcp.h>
+#endif
 
 namespace ant {
 

@@ -1,7 +1,11 @@
 #ifndef LIBANT_INCLUDE_LIBANT_NET_UDP_PACKET_H_
 #define LIBANT_INCLUDE_LIBANT_NET_UDP_PACKET_H_
 
+#ifndef _WIN32
 #include <netinet/udp.h>
+#else
+#include <libant/net/detail/udp.h>
+#endif
 
 namespace ant {
 

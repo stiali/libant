@@ -1,6 +1,12 @@
+#ifndef _WIN32
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
+#else
+#include <libant/net/detail/in.h>
+#include <libant/net/detail/tcp.h>
+#include <libant/net/detail/udp.h>
+#endif
 #include <libant/utils/likely.h>
 #include <libant/net/ip6.h>
 

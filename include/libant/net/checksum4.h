@@ -2,8 +2,13 @@
 #define LIBANT_INCLUDE_LIBANT_NET_CHECKSUM4_H_
 
 #include <cstddef>
+#ifndef _WIN32
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
+#else
+#include <libant/net/detail/ip.h>
+#include <libant/net/detail/tcp.h>
+#endif
 
 namespace ant {
 
