@@ -2,15 +2,9 @@
 #define LIBANT_INCLUDE_LIBANT_NET_CHECKSUM6_H_
 
 #include <cstddef>
-#ifndef _WIN32
-#include <netinet/ip6.h>
-#include <netinet/tcp.h>
-#include <netinet/udp.h>
-#else
 #include <libant/net/detail/ip6.h>
 #include <libant/net/detail/tcp.h>
 #include <libant/net/detail/udp.h>
-#endif
 
 namespace ant {
 

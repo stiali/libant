@@ -1,8 +1,4 @@
-#ifndef _WIN32
-#include <netinet/in.h>
-#else
 #include <libant/net/detail/in.h>
-#endif
 #include <libant/utils/likely.h>
 #include <libant/checksum/checksum.h>
 #include <libant/net/checksum6.h>

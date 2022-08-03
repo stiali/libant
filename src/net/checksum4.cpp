@@ -1,10 +1,5 @@
-#ifndef _WIN32
-#include <netinet/ip_icmp.h>
-#include <netinet/udp.h>
-#else
 #include <libant/net/detail/ip_icmp.h>
 #include <libant/net/detail/udp.h>
-#endif
 
 #include <libant/utils/likely.h>
 #include <libant/checksum/checksum.h>
