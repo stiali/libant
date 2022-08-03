@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "endian.h"
 #include "in.h"
 
 #ifdef _WIN32
