@@ -10,9 +10,9 @@
 
 namespace ant {
 
+#ifndef _WIN32
 bool Daemonize(bool noChgDir, bool noClose)
 {
-#ifndef _WIN32
     // Call umask to set the file mode creation mask to 0.
     // The file mode creation mask that's inherited could be set to deny certain permissions.
     // If the daemon process is going to create files, it may want to set specific permissions.
@@ -79,6 +79,9 @@ bool Daemonize(bool noChgDir, bool noClose)
             return false;
         }
     }
+#else
+bool Daemonize(bool, bool)
+{
 #endif // !_WIN32
     return true;
 }
