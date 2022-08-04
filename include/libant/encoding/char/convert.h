@@ -7,9 +7,9 @@ namespace ant {
 
 // UTF8 <--> GBK
 std::string Utf8ToGbk(const std::string& input);
-std::string Utf8ToGbk(const void* input, int inputLen);
+std::string Utf8ToGbk(const void* input, size_t inputLen);
 std::string GbkToUtf8(const std::string& input);
-std::string GbkToUtf8(const void* input, int inputLen);
+std::string GbkToUtf8(const void* input, size_t inputLen);
 
 // UTF8 <--> Unicode
 #ifdef _WIN32

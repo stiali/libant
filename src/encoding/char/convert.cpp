@@ -2,6 +2,7 @@
 #include <Windows.h>
 #else
 #include <iconv.h>
+#include <libant/utils/likely.h>
 #endif
 
 #include <libant/encoding/char/convert.h>
@@ -24,7 +25,7 @@ enum CharEncodingType {
 static const char* kEncodings[] = {"GBK", "UTF-8"};
 #endif
 
-inline string convertEncoding(const char* input, int inputLen, CharEncodingType fromEncoding, CharEncodingType toEncoding)
+inline string convertEncoding(const char* input, size_t inputLen, CharEncodingType fromEncoding, CharEncodingType toEncoding)
 {
 #ifdef _WIN32
     int len = MultiByteToWideChar(fromEncoding, 0, input, inputLen, 0, 0);
@@ -35,26 +36,51 @@ inline string convertEncoding(const char* input, int inputLen, CharEncodingType 
     WideCharToMultiByte(toEncoding, 0, wcharBuf.data(), len, &(charBuf[0]), len2, 0, 0);
     return charBuf;
 #else
-    return "Not yet implemented!";
+    string outBuf;
+    auto cd = iconv_open(kEncodings[toEncoding], kEncodings[fromEncoding]);
+    if (unlikely(cd == reinterpret_cast<iconv_t>(-1))) {
+        return outBuf;
+    }
+
+    outBuf.resize(inputLen * 2);
+    size_t outBytesLeft = outBuf.size();
+    char* in = const_cast<char*>(input);
+    char* out = outBuf.data();
+    for (;;) {
+        if (unlikely(inputLen == 0)) {
+            outBuf.resize(outBuf.size() - outBytesLeft);
+            break;
+        }
+
+        if (iconv(cd, &in, &inputLen, &out, &outBytesLeft) != -1) {
+            continue;
+        }
+
+        outBuf.clear();
+        break;
+    }
+
+    iconv_close(cd);
+    return outBuf;
 #endif
 }
 
 string Utf8ToGbk(const string& input)
 {
-    return convertEncoding(input.c_str(), static_cast<int>(input.size()), kEncodingUTF8, kEncodingGBK);
+    return convertEncoding(input.c_str(), input.size(), kEncodingUTF8, kEncodingGBK);
 }
 
-string Utf8ToGbk(const void* input, int inputLen)
+string Utf8ToGbk(const void* input, size_t inputLen)
 {
     return convertEncoding(reinterpret_cast<const char*>(input), inputLen, kEncodingUTF8, kEncodingGBK);
 }
 
 string GbkToUtf8(const string& input)
 {
-    return convertEncoding(input.c_str(), static_cast<int>(input.size()), kEncodingGBK, kEncodingUTF8);
+    return convertEncoding(input.c_str(), input.size(), kEncodingGBK, kEncodingUTF8);
 }
 
-string GbkToUtf8(const void* input, int inputLen)
+string GbkToUtf8(const void* input, size_t inputLen)
 {
     return convertEncoding(reinterpret_cast<const char*>(input), inputLen, kEncodingGBK, kEncodingUTF8);
 }
