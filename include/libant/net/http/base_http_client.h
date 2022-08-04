@@ -9,16 +9,16 @@
 
 namespace ant {
 
-class base_http_client : public std::enable_shared_from_this<base_http_client> {
+class BaseHttpClient : public std::enable_shared_from_this<BaseHttpClient> {
 public:
     using callback = std::function<void(boost::beast::error_code, boost::beast::http::response<boost::beast::http::string_body>)>;
 
 public:
-    base_http_client(boost::asio::io_context& ioCtx, const std::string& svrAddr, uint16_t maxRetryTimes = 2,
-                     std::chrono::milliseconds ioTimeoutMs = std::chrono::milliseconds(5000),
-                     std::chrono::milliseconds connectTimeoutMs = std::chrono::milliseconds(2000), const char* defPort = "80");
+    BaseHttpClient(boost::asio::io_context& ioCtx, const std::string& svrAddr, uint16_t maxRetryTimes = 2,
+                   std::chrono::milliseconds ioTimeoutMs = std::chrono::milliseconds(5000),
+                   std::chrono::milliseconds connectTimeoutMs = std::chrono::milliseconds(2000), const char* defPort = "80");
 
-    virtual ~base_http_client()
+    virtual ~BaseHttpClient()
     {
         boost::beast::error_code ec(boost::beast::errc::operation_canceled, boost::beast::generic_category());
         for (auto p : pendingRequests_) {
@@ -143,7 +143,7 @@ private:
     void resolve()
     {
         // Look up the domain name
-        resolver_.async_resolve(host_, port_, boost::beast::bind_front_handler(&base_http_client::on_resolve, shared_from_this()));
+        resolver_.async_resolve(host_, port_, boost::beast::bind_front_handler(&BaseHttpClient::on_resolve, shared_from_this()));
     }
     void on_resolve(const boost::beast::error_code& ec, boost::asio::ip::tcp::resolver::results_type results);
 
@@ -153,7 +153,7 @@ private:
         // Set a timeout on the operation
         stream.expires_after(connectTimeout_);
         // Make the connection on the IP address we get from a lookup
-        stream.async_connect(resolvedResults_, boost::beast::bind_front_handler(&base_http_client::on_connect, shared_from_this()));
+        stream.async_connect(resolvedResults_, boost::beast::bind_front_handler(&BaseHttpClient::on_connect, shared_from_this()));
     }
     void on_connect(const boost::beast::error_code& ec, const boost::asio::ip::tcp::resolver::results_type::endpoint_type&);
 

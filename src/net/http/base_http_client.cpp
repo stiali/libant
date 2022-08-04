@@ -10,8 +10,8 @@ namespace ant {
 // Public Methods
 //================================================================================
 
-base_http_client::base_http_client(boost::asio::io_context& ioCtx, const std::string& svrAddr, uint16_t maxRetryTimes, std::chrono::milliseconds ioTimeoutMs,
-                                   std::chrono::milliseconds connectTimeoutMs, const char* defPort)
+BaseHttpClient::BaseHttpClient(boost::asio::io_context& ioCtx, const std::string& svrAddr, uint16_t maxRetryTimes, std::chrono::milliseconds ioTimeoutMs,
+                               std::chrono::milliseconds connectTimeoutMs, const char* defPort)
     : ioTimeout_(ioTimeoutMs)
     , connectTimeout_(connectTimeoutMs)
     , maxRetryTimes_(maxRetryTimes)
@@ -33,7 +33,7 @@ base_http_client::base_http_client(boost::asio::io_context& ioCtx, const std::st
 // Protected Methods
 //================================================================================
 
-void base_http_client::on_handshake(const boost::beast::error_code& ec)
+void BaseHttpClient::on_handshake(const boost::beast::error_code& ec)
 {
     if (!ec) {
         connected_ = true;
@@ -49,7 +49,7 @@ void base_http_client::on_handshake(const boost::beast::error_code& ec)
     response(ec);
 }
 
-void base_http_client::on_request_sent(const boost::beast::error_code& ec, size_t)
+void BaseHttpClient::on_request_sent(const boost::beast::error_code& ec, size_t)
 {
     if (!ec) {
         return read_response();
@@ -65,7 +65,7 @@ void base_http_client::on_request_sent(const boost::beast::error_code& ec, size_
     response(ec);
 }
 
-void base_http_client::on_response_read(const boost::beast::error_code& ec, size_t)
+void BaseHttpClient::on_response_read(const boost::beast::error_code& ec, size_t)
 {
     if (!ec) {
         if (!response_.keep_alive()) {
@@ -104,9 +104,9 @@ void base_http_client::on_response_read(const boost::beast::error_code& ec, size
 // Private Methods
 //================================================================================
 
-void base_http_client::init_request(boost::beast::http::verb method, const std::string& target, const std::unordered_map<std::string, std::string>* params,
-                                    const std::string* contentType, const std::string* httpBody, const std::vector<std::string>* cookies,
-                                    const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders)
+void BaseHttpClient::init_request(boost::beast::http::verb method, const std::string& target, const std::unordered_map<std::string, std::string>* params,
+                                  const std::string* contentType, const std::string* httpBody, const std::vector<std::string>* cookies,
+                                  const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders)
 {
     request_.clear();
     request_.version(11);
@@ -156,7 +156,7 @@ void base_http_client::init_request(boost::beast::http::verb method, const std::
     request_.prepare_payload();
 }
 
-void base_http_client::init_request(const request_params* req_params)
+void BaseHttpClient::init_request(const request_params* req_params)
 {
     request_.clear();
     request_.version(11);
@@ -188,7 +188,7 @@ void base_http_client::init_request(const request_params* req_params)
     request_.prepare_payload();
 }
 
-void base_http_client::on_resolve(const boost::beast::error_code& ec, boost::asio::ip::tcp::resolver::results_type results)
+void BaseHttpClient::on_resolve(const boost::beast::error_code& ec, boost::asio::ip::tcp::resolver::results_type results)
 {
     if (!ec) {
         resolvedResults_ = move(results);
@@ -203,7 +203,7 @@ void base_http_client::on_resolve(const boost::beast::error_code& ec, boost::asi
     response(ec);
 }
 
-void base_http_client::on_connect(const boost::beast::error_code& ec, const boost::asio::ip::tcp::resolver::results_type::endpoint_type&)
+void BaseHttpClient::on_connect(const boost::beast::error_code& ec, const boost::asio::ip::tcp::resolver::results_type::endpoint_type&)
 {
     if (!ec) {
         return handshake();
@@ -221,10 +221,10 @@ void base_http_client::on_connect(const boost::beast::error_code& ec, const boos
 // request_params public Methods
 //================================================================================
 
-base_http_client::request_params::request_params(callback cb_func, boost::beast::http::verb http_method, const std::string& http_target,
-                                                 const std::unordered_map<std::string, std::string>* params, const std::string* http_content_type,
-                                                 const std::string* http_body, const std::vector<std::string>* http_cookies,
-                                                 const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders)
+BaseHttpClient::request_params::request_params(callback cb_func, boost::beast::http::verb http_method, const std::string& http_target,
+                                               const std::unordered_map<std::string, std::string>* params, const std::string* http_content_type,
+                                               const std::string* http_body, const std::vector<std::string>* http_cookies,
+                                               const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders)
     : cb(std::move(cb_func))
     , method(http_method)
     , target(http_target)
