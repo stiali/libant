@@ -1,5 +1,7 @@
 #ifdef _WIN32
 #include <Windows.h>
+#else
+#include <iconv.h>
 #endif
 
 #include <libant/encoding/char/convert.h>
@@ -13,11 +15,14 @@ enum CharEncodingType {
     kEncodingGBK = CP_ACP,
     kEncodingUTF8 = CP_UTF8,
 #else
-    // TODO andy:
     kEncodingGBK,
     kEncodingUTF8,
 #endif
 };
+
+#ifndef _WIN32
+static const char* kEncodings[] = {"GBK", "UTF-8"};
+#endif
 
 inline string convertEncoding(const char* input, int inputLen, CharEncodingType fromEncoding, CharEncodingType toEncoding)
 {
@@ -54,6 +59,8 @@ string GbkToUtf8(const void* input, int inputLen)
     return convertEncoding(reinterpret_cast<const char*>(input), inputLen, kEncodingGBK, kEncodingUTF8);
 }
 
+#ifdef _WIN32
+
 std::wstring Utf8ToUnicode(const std::string& input)
 {
     return Utf8ToUnicode(input.c_str(), static_cast<int>(input.size()));
@@ -61,15 +68,11 @@ std::wstring Utf8ToUnicode(const std::string& input)
 
 std::wstring Utf8ToUnicode(const void* input, int inputLen)
 {
-#ifdef _WIN32
     wstring wcharBuf;
     wcharBuf.resize(inputLen);
     auto len = MultiByteToWideChar(kEncodingUTF8, 0, reinterpret_cast<const char*>(input), inputLen, &(wcharBuf[0]), inputLen);
     wcharBuf.resize(len);
     return wcharBuf;
-#else
-    return wstring(); // TODO andy:
-#endif
 }
 
 std::string UnicodeToUtf8(const std::wstring& input)
@@ -79,16 +82,14 @@ std::string UnicodeToUtf8(const std::wstring& input)
 
 std::string UnicodeToUtf8(const wchar_t* input, int inputLen)
 {
-#ifdef _WIN32
     auto outLen = inputLen * 3;
     string charBuf;
     charBuf.resize(outLen);
     outLen = WideCharToMultiByte(kEncodingUTF8, 0, input, inputLen, &(charBuf[0]), outLen, 0, 0);
     charBuf.resize(outLen);
     return charBuf;
-#else
-    return string();  // TODO andy:
-#endif
 }
+
+#endif
 
 } // namespace ant
