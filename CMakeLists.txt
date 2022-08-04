@@ -34,6 +34,18 @@ if (NOT RdKafka_FOUND)
             ${CMAKE_CURRENT_SOURCE_DIR}/src/kafka/producer.cpp)
 endif ()
 
+find_package(Boost 1.70.0)
+if (Boost_FOUND)
+    message(STATUS "Boost library found")
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
+else ()
+    message(STATUS "Boost library not found")
+    list(REMOVE_ITEM LIBANT_SOURCE_FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/net/http/base_http_client.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/net/http/http_client_pool.cpp)
+endif ()
+
 # include search dir
 include_directories(
         ${PROJECT_SOURCE_DIR}/../
