@@ -11,7 +11,7 @@ namespace ant {
 
 class BaseHttpClient : public std::enable_shared_from_this<BaseHttpClient> {
 public:
-    using callback = std::function<void(boost::beast::error_code, boost::beast::http::response<boost::beast::http::string_body>)>;
+    using Callback = std::function<void(boost::beast::error_code, boost::beast::http::response<boost::beast::http::string_body>)>;
 
 public:
     BaseHttpClient(boost::asio::io_context& ioCtx, const std::string& svrAddr, uint16_t maxRetryTimes = 2,
@@ -29,13 +29,13 @@ public:
         }
     }
 
-    void get(callback cb, const std::string& target, const std::unordered_map<std::string, std::string>* params = nullptr,
+    void Get(Callback cb, const std::string& target, const std::unordered_map<std::string, std::string>* params = nullptr,
              const std::vector<std::string>* cookies = nullptr)
     {
         request(std::move(cb), boost::beast::http::verb::get, target, params, nullptr, nullptr, cookies, nullptr);
     }
 
-    void post(callback cb, const std::string& target, const std::unordered_map<std::string, std::string>* params = nullptr,
+    void Post(Callback cb, const std::string& target, const std::unordered_map<std::string, std::string>* params = nullptr,
               const std::string* contentType = nullptr, const std::string* httpBody = nullptr, const std::vector<std::string>* cookies = nullptr,
               const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders = nullptr)
     {
@@ -56,12 +56,12 @@ private:
 
 private:
     struct request_params {
-        request_params(callback cb_func)
+        request_params(Callback cb_func)
             : cb(std::move(cb_func))
         {
         }
 
-        request_params(callback cb_func, boost::beast::http::verb http_method, const std::string& http_target,
+        request_params(Callback cb_func, boost::beast::http::verb http_method, const std::string& http_target,
                        const std::unordered_map<std::string, std::string>* params, const std::string* http_content_type, const std::string* http_body,
                        const std::vector<std::string>* http_cookies, const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders);
 
@@ -73,7 +73,7 @@ private:
             delete additional_headers;
         }
 
-        callback cb;
+        Callback cb;
         boost::beast::http::verb method;
         std::string target;
         const std::string* content_type{nullptr};
@@ -83,7 +83,7 @@ private:
     };
 
 private:
-    void request(callback cb, boost::beast::http::verb method, const std::string& target, const std::unordered_map<std::string, std::string>* params,
+    void request(Callback cb, boost::beast::http::verb method, const std::string& target, const std::unordered_map<std::string, std::string>* params,
                  const std::string* contentType, const std::string* httpBody, const std::vector<std::string>* cookies,
                  const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders)
     {

@@ -221,7 +221,7 @@ void BaseHttpClient::on_connect(const boost::beast::error_code& ec, const boost:
 // request_params public Methods
 //================================================================================
 
-BaseHttpClient::request_params::request_params(callback cb_func, boost::beast::http::verb http_method, const std::string& http_target,
+BaseHttpClient::request_params::request_params(Callback cb_func, boost::beast::http::verb http_method, const std::string& http_target,
                                                const std::unordered_map<std::string, std::string>* params, const std::string* http_content_type,
                                                const std::string* http_body, const std::vector<std::string>* http_cookies,
                                                const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders)
