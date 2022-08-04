@@ -1,7 +1,7 @@
 #ifndef LIBANT_INCLUDE_LIBANT_HASH_HASH_H_
 #define LIBANT_INCLUDE_LIBANT_HASH_HASH_H_
 
-#include <cstdint>
+#include <string>
 
 namespace ant {
 
@@ -16,6 +16,31 @@ inline uint64_t BKDRHash(const void* const data, const size_t dataLen)
         val = val * 131 + static_cast<uint64_t>(p[i]);
     }
     return val;
+}
+
+/**
+ * R5 Hash Function
+ */
+inline uint32_t R5Hash(const char* p)
+{
+    uint32_t h = 0;
+    while (*p) {
+        h = h * 11 + (*p << 4) + (*p >> 4);
+        p++;
+    }
+    return h;
+}
+
+/**
+ * R5 Hash Function
+ */
+inline uint32_t R5Hash(const std::string& s)
+{
+    uint32_t h = 0;
+    for (std::string::size_type i = 0; i != s.size(); ++i) {
+        h = h * 11 + (s[i] << 4) + (s[i] >> 4);
+    }
+    return h;
 }
 
 } // namespace ant
