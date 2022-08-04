@@ -11,10 +11,15 @@
 
 namespace ant {
 
-// 线程池。可以执行任意任务，包括普通函数、函数对象、lambda等。任务函数必须返回std::shared_ptr<AbsOutput>
+/**
+ * ThreadPoolEx can run any kind of task, including function, functor, lambda, etc.
+ * The only limitation is that the task must return std::shared_ptr<AbsOutput> as it's result.
+ */
 class ThreadPoolEx {
 public:
-    // 使用该线程池的任务，必须返回std::shared_ptr<AbsOutput>
+    /**
+     * To make use of ThreadPoolEx, a task must return std::shared_ptr<AbsOutput>
+     */
     class AbsOutput {
     public:
         virtual ~AbsOutput()
@@ -30,7 +35,7 @@ private:
         virtual ~AbsExecutor()
         {
         }
-        // 执行任务，把结果插入线程池的结果队列
+
         virtual void Exec(ThreadPoolEx&) = 0;
     };
 
@@ -49,6 +54,11 @@ private:
     };
 
 public:
+    /**
+     * Construct a ThreadPoolEx object.
+     * @param minThreadNum
+     * @param maxThreadNum
+     */
     ThreadPoolEx(int minThreadNum, int maxThreadNum)
         : maxThreadNum_(maxThreadNum)
         , freeWorkerNum_(0)
@@ -65,10 +75,13 @@ public:
         Stop();
     }
 
-    // 执行任务。如果有空闲线程，直接使用；如果无空闲线程，且未达到最大线程数限制，则新建线程；如果已达到最大限制，则排队等待。
-    // 正常情况下，构造函数结束后，freeWorkerNum_应该等于minThreadNum。
-    // 极端情况下，构造函数结束后，线程尚未运行，freeWorkerNum_仍然是0。此时，若调用了Run，则会创建新线程。这个新线程可能得不到任务，
-    // 然后直接退出；也可能得到任务，执行完毕后再退出（或者继续执行队列中的任务）。
+    /**
+     * Use ThreadPool to run a task.
+     * @tparam Function
+     * @tparam Args
+     * @param task
+     * @param args
+     */
     template<typename Function, typename... Args>
     void Run(Function&& task, Args&&... args)
     {
@@ -86,15 +99,19 @@ public:
         }
         taskQueueLock_.unlock();
 
-        delete executor; // delete nullptr是安全的，无需判断
+        delete executor;
     }
 
-    // 获取任务执行结果
-    //   waitMs：等待时间，毫秒。0表示不等待（默认），> 0表示等待毫秒数，< 0表示等到结果为止
-    //   返回：pair::second为true表示成功，反之表示失败
+    /**
+     * Get result of a finished task.
+     * @param waitMs waiting time in milliseconds. 0 means don't wait, > 0 means wait for the specified amount of time, < 0 means wait until a result is available.
+     * @return shared pointer to the result on success, nullptr on failure.
+     */
     std::shared_ptr<AbsOutput> GetJobOutput(int waitMs = 0);
 
-    // 关闭线程池。该函数会等待所有任务执行完毕后，再退出。
+    /**
+     * Stop ThreadPoolEx. It blocks until all the tasks are finished.
+     */
     void Stop();
 
 private:
