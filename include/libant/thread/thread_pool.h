@@ -13,18 +13,25 @@
 
 namespace ant {
 
-// 线程池。Job实现任务处理流程，需要实现以下接口：
-//
-//   1. void SetConfig(JobConfig i) 或者 void SetConfig(const JobConfig& i) 或者 void SetConfig(JobConfig&& i)
-//      该接口用于设置/重新设置Job需要的配置信息
-//
-//   2. JobOutput Process(JobInput task)
-//      该接口实现任务处理流程
-//
-// Job的所有成员函数运行在相同的线程，即Job的成员函数之间不存在多线程竞争关系。
+/**
+ * A thread pool to run Job
+ *
+ * @tparam Job the lifetime of a Job object is within the same thread. The Job class must implement 2 methods:
+ *   - 1. 'JobOutput Process(JobInput task)' to process the task and return the result
+ *   - 2. 'void SetConfig(JobConfig i) or void SetConfig(const JobConfig& i) or void SetConfig(JobConfig&& i)' to reset configurations
+ * @tparam JobConfig
+ * @tparam JobInput
+ * @tparam JobOutput
+ */
 template<typename Job, typename JobConfig, typename JobInput, typename JobOutput>
 class ThreadPool {
 public:
+    /**
+     * Construct a ThreadPool to run Jobs
+     * @param minThreadNum
+     * @param maxThreadNum
+     * @param cfg
+     */
     ThreadPool(int minThreadNum, int maxThreadNum, const JobConfig* cfg = nullptr)
         : maxThreadNum_(maxThreadNum)
         , freeWorkerNum_(0)
@@ -45,10 +52,10 @@ public:
         Stop();
     }
 
-    // 执行任务。如果有空闲线程，直接使用；如果无空闲线程，且未达到最大线程数限制，则新建线程；如果已达到最大限制，则排队等待。
-    // 正常情况下，构造函数结束后，freeWorkerNum_应该等于minThreadNum。
-    // 极端情况下，构造函数结束后，线程尚未运行，freeWorkerNum_仍然是0。此时，若调用了Run，则会创建新线程。这个新线程可能得不到任务，
-    // 然后直接退出；也可能得到任务，执行完毕后再退出（或者继续执行队列中的任务）。
+    /**
+     * Use ThreadPool to run a task.
+     * @param task
+     */
     void Run(JobInput task)
     {
         dataQueueMtx_.lock();
@@ -62,9 +69,11 @@ public:
         dataQueueMtx_.unlock();
     }
 
-    // 获取任务执行结果
-    //   waitMs：等待时间，毫秒。0表示不等待（默认），> 0表示等待毫秒数，< 0表示等到结果为止
-    //   返回：pair::second为true表示成功，反之表示失败
+    /**
+     * Get result of a finished task.
+     * @param waitMs waiting time in milliseconds. 0 means don't wait, > 0 means wait for the specified amount of time, < 0 means wait until a result is available.
+     * @return true on success, false on failure
+     */
     std::pair<JobOutput, bool> GetJobOutput(int waitMs = 0)
     {
         std::unique_lock<std::mutex> lck(dataQueueMtx_);
@@ -91,7 +100,10 @@ public:
         return std::make_pair(JobOutput(), false);
     }
 
-    // 获取处理中和排队等待处理的任务总数
+    /**
+     * Get number of unfinished tasks.
+     * @return number of unfinished tasks.
+     */
     size_t GetPendingTaskCount()
     {
         dataQueueMtx_.lock();
@@ -100,7 +112,9 @@ public:
         return n;
     }
 
-    // 关闭线程池。该函数会等待所有任务执行完毕后，再退出。
+    /**
+     * Stop the ThreadPool. It blocks until all the tasks are finished.
+     */
     void Stop()
     {
         dataQueueMtx_.lock();
@@ -110,7 +124,6 @@ public:
             dataQueueCond_.notify_all();
             outQueueCond_.notify_all();
 
-            // stop_设为true后，只有这里会操作allWorkers_
             for (auto worker : allWorkers_) {
                 delete worker;
             }
@@ -121,6 +134,10 @@ public:
         }
     }
 
+    /**
+     * Reset JobConfig
+     * @param cfg
+     */
     void ResetJobConfig(const JobConfig& cfg)
     {
         setJobConfig(cfg);
@@ -225,7 +242,7 @@ private:
                 } else {
                     auto cv = pool_.dataQueueCond_.wait_for(lck, std::chrono::seconds(5));
                     if (cv == std::cv_status::timeout) {
-                        if (!pool_.stop_) { // 极端情况下，可能别的线程调用了pool_.Stop()后，刚好这里也超时，所以需要判断一下
+                        if (!pool_.stop_) {
                             pool_.allWorkers_.erase(this);
                             --(pool_.freeWorkerNum_);
                             lck.unlock();
@@ -246,7 +263,7 @@ private:
             pool_.dataQueue_.pop_front();
             lck.unlock();
 
-            if (needResetJobConfig()) { // 重置配置信息
+            if (needResetJobConfig()) {
                 job_.SetConfig(pool_.getJobConfig());
             }
 
