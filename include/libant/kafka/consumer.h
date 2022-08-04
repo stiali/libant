@@ -8,7 +8,7 @@
 namespace ant {
 
 /**
- * @brief RdKafka::KafkaConsumer的简单封装
+ * @brief A simple wrapper for RdKafka::KafkaConsumer
  */
 class KafkaConsumer {
 public:
@@ -16,23 +16,25 @@ public:
 
 public:
     /**
-	 * @brief 构造函数
-	 * @param brokers 逗号分隔的ip:port列表
+	 * @brief Constructor
+	 * @param brokers broker addresses separated by ','. eg: "1.1.1.1:1111,2.2.2.2:2222"
 	 * @param groupID
-	 * @param topics 逗号分隔的topic列表
+	 * @param topics topic list separated by ','
+     * @param offsetCb offset commit callback
+     * @param evcb event callback
 	 */
     KafkaConsumer(const std::string& brokers, const std::string& groupID, const std::string& topics, RdKafka::OffsetCommitCb* offsetCb = nullptr,
                   RdKafka::EventCb* evcb = nullptr);
 
     ~KafkaConsumer()
     {
-        //consumer_->close(); // 会卡死，先注释掉，后续看情况调整
+        // consumer_->close(); // TODO andy: It sometimes blocks forever! Need it or not?
         delete consumer_;
     }
 
     /**
-	 * @brief 获取一条消息或者错误事件,触发回调函数
-	 * @remark 使用delete释放消息内存
+	 * @brief Consume a message or error event. A corresponding callback will be triggered
+	 * @note use delete to free message
 	 * @returns One of:
 	 *  - proper message (Message::err() is ERR_NO_ERROR)
 	 *  - error event (Message::err() is != ERR_NO_ERROR)
@@ -45,7 +47,7 @@ public:
     }
 
     /**
-	 * @brief 异步提交Offset
+	 * @brief Commit offset asynchronously
 	 */
     void AsyncCommit(Message* msg)
     {

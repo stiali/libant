@@ -8,14 +8,16 @@
 namespace ant {
 
 /**
- * @brief RdKafka::Producer的简单封装
+ * @brief A simple wrapper for RdKafka::Producer
  */
 class KafkaProducer {
 public:
     /**
-	 * @brief 构造函数
-	 * @param brokers 逗号分隔的ip:port列表
+	 * @brief Constructor
+	 * @param brokers broker addresses separated by ','. eg: "1.1.1.1:1111,2.2.2.2:2222"
 	 * @param topic
+     * @param drcb delivery report callback
+     * @param evcb event callback
 	 */
     KafkaProducer(const std::string& brokers, const std::string& topic, RdKafka::DeliveryReportCb* drcb = nullptr, RdKafka::EventCb* evcb = nullptr);
 
@@ -27,39 +29,36 @@ public:
     }
 
     /**
-	 * @brief 异步往kafka broker发送一条消息
-	 * @param payload 发送给kafka broker的消息内容
-	 * @param msgOpaque 调用送达通知回调函数dr_cb时，传递给该函数
-	 * @return 表示成功或者失败的错误码，取值如下：
-	 *  - ERR_NO_ERROR           - 成功写入队列
-	 *  - ERR__QUEUE_FULL        - 队列满：queue.buffering.max.message
-	 *  - ERR_MSG_SIZE_TOO_LARGE - 消息太大：messages.max.bytes
+	 * @brief Send a message to a kafka broker asynchronously
+	 * @param payload message payload
+	 * @param msgOpaque passed to delivery report callback as it is
+	 * @return
+	 *  - ERR_NO_ERROR           - Success
+	 *  - ERR__QUEUE_FULL        - queue.buffering.max.message
+	 *  - ERR_MSG_SIZE_TOO_LARGE - messages.max.bytes
 	 *  - ERR__UNKNOWN_PARTITION
 	 *  - ERR__UNKNOWN_TOPIC
 	 */
     KafkaErrCode Produce(const std::string& payload, void* msgOpaque = nullptr)
     {
-        // 只有当送达通知回调函数返回之后，该消息才会被移出队列。
-        // 所以produce返回队列满时，不能马上重试，只能在定期调用Poll()函数后再重试。
+        // Message is dequeued only after delivery report callback is called.
+        // So don't retry immediately after Produce() tells us that the queue is full.
+        // Retry periodically after Poll().
         return producer_->produce(topic_, RdKafka::Topic::PARTITION_UA, RdKafka::Producer::RK_MSG_COPY, const_cast<char*>(payload.data()), payload.size(),
                                   nullptr, msgOpaque);
     }
 
     /**
-	* @brief 同步往kafka broker发送一条消息
-	* @param payload 发送给kafka broker的消息内容
-	* @return 表示成功或者失败的错误码
+	* @brief Send a message to a kafka broker synchronously
+	* @param payload message payload
+	* @return KafkaErrCode as documented at Produce()
 	*/
     KafkaErrCode SyncProduce(const std::string& payload);
 
     /**
-	 * @brief 触发已完成事件的回调函数。程序必须定期调用该函数，以触发事件回调函数。
-	 * @param timeoutMS 函数等待事件的时间（毫秒），0表示不等待，-1表示永久等待
-	 *
-	 * 事件包括：
-	 *   - 送达通知，回调dr_cb
-	 *   - 其他事件，调用event_cb
-	 * @returns 返回事件个数
+	 * @brief Call this method periodically to trigger callbacks.
+	 * @param timeoutMS blocking time in milliseconds. 0 for non-blocking, -1 for block as long as it takes to trigger a callback
+	 * @returns number of callbacks triggered
 	 */
     int Poll(int timeoutMS = 0)
     {
@@ -72,15 +71,19 @@ private:
 };
 
 /**
-* @brief KafkaProducer对象池，线程安全。
+* @brief KafkaProducer object pool, thread-safe。
 */
 class KafkaProducerPool {
 public:
     /**
-	* @brief 构造Oracle操作对象
-	* @throw occi::SQLException
-	* @note 多线程环境下，使用者必须保证drcb和evcb是线程安全的
-	*/
+	 * @brief Constructor
+     * @param maxPooledProducers
+     * @param brokers
+     * @param topic
+     * @param drcb make sure your callback is thread-safe
+     * @param evcb make sure your callback is thread-safe
+	 * @note User of KafkaProducerPool must make sure that drcb and evcb are thread-safe
+	 */
     KafkaProducerPool(size_t maxPooledProducers, const std::string& brokers, const std::string& topic, RdKafka::DeliveryReportCb* drcb = nullptr,
                       RdKafka::EventCb* evcb = nullptr)
         : maxPooledProducers_(maxPooledProducers)
@@ -102,13 +105,13 @@ public:
     const KafkaProducerPool& operator=(const KafkaProducerPool&) = delete;
 
     /**
-	* @brief 获取KafkaProducer对象，使用完毕后，要调用Put接口返还。
-	*/
+	 * @brief Get a KafkaProducer object. Return it back to the pool by calling Put().
+	 */
     KafkaProducer* Get();
 
     /**
-	* @brief 返还通过Get接口获取的KafkaProducer对象。
-	*/
+	 * @brief Return a KafkaProducer object to the pool.
+	 */
     void Put(KafkaProducer* producer);
 
 private:
