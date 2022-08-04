@@ -77,7 +77,7 @@ bool ShmCircularBufQueue::Destroy()
     return ((shm_unlink(cq_->Name) == 0) && Detach());
 #else
     // no easy way to remove shared memory under windows system
-    return (CloseHandle(mapfile_) && detach());
+    return (CloseHandle(mapfile_) && Detach());
 #endif
 }
 

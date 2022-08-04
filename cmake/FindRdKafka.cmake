@@ -45,6 +45,10 @@ find_package_handle_standard_args(RdKafka DEFAULT_MSG
         RdKafka_INCLUDE_DIR
         )
 
+if (NOT RdKafka_LIBRARY_PATH OR NOT RdKafka_INCLUDE_DIR)
+    RETURN()
+endif ()
+
 set(CONTENTS "#include <librdkafka/rdkafka.h>\n #if RD_KAFKA_VERSION >= 0x010200ff\n int main() { }\n #else\n xxx\n #endif")
 set(FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/rdkafka_version_test.cpp)
 file(WRITE ${FILE_NAME} ${CONTENTS})
