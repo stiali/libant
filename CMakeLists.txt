@@ -15,6 +15,11 @@ if (FILE_SYSTEM_NOT_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/src/logger/fmt/format.cpp)
 endif ()
 
+if (NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    list(REMOVE_ITEM LIBANT_SOURCE_FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/system/epoll.cpp)
+endif ()
+
 # OpenSSL
 find_package(OpenSSL)
 if (OpenSSL_FOUND)
