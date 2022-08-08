@@ -7,8 +7,11 @@ namespace ant {
 uint64_t AddChecksum(uint64_t currentChecksum, const void* data, size_t dataLen)
 {
 #ifdef LIBANT_NO_UNALIGNED_ACCESS
-    std::string tmpBuf(reinterpret_cast<const char*>(data), dataLen);
-    data = tmpBuf.c_str();
+    std::string tmpBuf;
+    if (reinterpret_cast<uint64_t>(data) % 4) {
+        tmpBuf.append(reinterpret_cast<const char*>(data), dataLen);
+        data = tmpBuf.c_str();
+    }
 #endif
     // add data altogether
     auto data32 = reinterpret_cast<const uint32_t*>(data);
