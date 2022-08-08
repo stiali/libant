@@ -2,6 +2,7 @@
 #define LIBANT_ENCODING_BINARY_BINARY_WRITER_H_
 
 #include <string>
+#include <libant/utils/os.h>
 
 #include "endian.h"
 
@@ -40,9 +41,19 @@ public:
         auto pos = buf_.size();
         buf_.resize(pos + sizeof val);
         if constexpr (endian == Endian::LittleEndian) {
+#ifdef LIBANT_NO_UNALIGNED_ACCESS
+            val = ant::HostToLittleEndian(val);
+            memcpy(&buf_[pos], &val, sizeof val);
+#else
             *reinterpret_cast<T*>(&buf_[pos]) = ant::HostToLittleEndian(val);
+#endif
         } else {
+#ifdef LIBANT_NO_UNALIGNED_ACCESS
+            val = ant::HostToBigEndian(val);
+            memcpy(&buf_[pos], &val, sizeof val);
+#else
             *reinterpret_cast<T*>(&buf_[pos]) = ant::HostToBigEndian(val);
+#endif
         }
     }
 
