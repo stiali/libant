@@ -4,6 +4,8 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <string>
+#include <libant/utils/os.h>
 
 #include "endian.h"
 
@@ -90,9 +92,19 @@ public:
         assert(prependingBytes <= headCap_);
         head_ -= prependingBytes;
         if constexpr (endian == Endian::LittleEndian) {
+#ifdef LIBANT_NO_UNALIGNED_ACCESS
+            val = ant::HostToLittleEndian(val);
+            memcpy(head_, &val, prependingBytes);
+#else
             *reinterpret_cast<T*>(head_) = ant::HostToLittleEndian(val);
+#endif
         } else {
+#ifdef LIBANT_NO_UNALIGNED_ACCESS
+            val = ant::HostToBigEndian(val);
+            memcpy(head_, &val, prependingBytes);
+#else
             *reinterpret_cast<T*>(head_) = ant::HostToBigEndian(val);
+#endif
         }
         headCap_ -= prependingBytes;
     }
@@ -163,9 +175,19 @@ public:
         uint32_t appendingBytes = sizeof val;
         grow(appendingBytes);
         if constexpr (endian == Endian::LittleEndian) {
+#ifdef LIBANT_NO_UNALIGNED_ACCESS
+            val = ant::HostToLittleEndian(val);
+            memcpy(tail_, &val, appendingBytes);
+#else
             *reinterpret_cast<T*>(tail_) = ant::HostToLittleEndian(val);
+#endif
         } else {
+#ifdef LIBANT_NO_UNALIGNED_ACCESS
+            val = ant::HostToBigEndian(val);
+            memcpy(tail_, &val, appendingBytes);
+#else
             *reinterpret_cast<T*>(tail_) = ant::HostToBigEndian(val);
+#endif
         }
         tail_ += appendingBytes;
         tailCap_ -= appendingBytes;
