@@ -3,6 +3,7 @@
 
 #include <string>
 #include <string_view>
+#include <libant/utils/os.h>
 
 #include "endian.h"
 
@@ -52,9 +53,19 @@ public:
         auto finalPos = pos_ + sizeof(T);
         if (finalPos <= buf_.size()) {
             if constexpr (endian == Endian::LittleEndian) {
+#ifdef LIBANT_NO_UNALIGNED_ACCESS
+                memcpy(&val, &buf_[pos_], sizeof val);
+                val = LittleEndianToHost(val);
+#else
                 val = LittleEndianToHost(*reinterpret_cast<const T*>(&buf_[pos_]));
+#endif
             } else {
+#ifdef LIBANT_NO_UNALIGNED_ACCESS
+                memcpy(&val, &buf_[pos_], sizeof val);
+                val = BigEndianToHost(val);
+#else
                 val = BigEndianToHost(*reinterpret_cast<const T*>(&buf_[pos_]));
+#endif
             }
             pos_ = finalPos;
             return true;
