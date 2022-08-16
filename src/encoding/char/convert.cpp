@@ -52,7 +52,7 @@ inline string convertEncoding(const char* input, size_t inputLen, CharEncodingTy
             break;
         }
 
-        if (iconv(cd, &in, &inputLen, &out, &outBytesLeft) != -1) {
+        if (iconv(cd, &in, &inputLen, &out, &outBytesLeft) != static_cast<size_t>(-1)) {
             continue;
         }
 
