@@ -32,7 +32,7 @@ else ()
 endif ()
 
 find_package(RdKafka)
-if (NOT RdKafka_FOUND)
+if (NOT RdKafka_FOUND OR IOS)
     message(STATUS "RdKafka not found")
     list(REMOVE_ITEM LIBANT_SOURCE_FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/src/kafka/consumer.cpp
@@ -40,7 +40,7 @@ if (NOT RdKafka_FOUND)
 endif ()
 
 find_package(Boost 1.70.0)
-if (Boost_FOUND)
+if (Boost_FOUND AND NOT IOS)
     message(STATUS "Boost library found")
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})
@@ -49,6 +49,12 @@ else ()
     list(REMOVE_ITEM LIBANT_SOURCE_FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/src/net/http/base_http_client.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/net/http/http_client_pool.cpp)
+endif ()
+
+if (ANDROID)
+    list(REMOVE_ITEM LIBANT_SOURCE_FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/interprocess/containers/shm_circular_buf_queue.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/encoding/char/convert.cpp)
 endif ()
 
 # include search dir
