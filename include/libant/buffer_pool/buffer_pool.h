@@ -83,7 +83,7 @@ public:
         } else {
             buf = new BufferType;
         }
-        return BufferPtr(buf, [weak = BufferPool::weak_from_this()](auto buf) {
+        return BufferPtr(buf, [weak = BufferPool::weak_from_this()](BufferType* buf) {
             if (auto self = weak.lock(); self != nullptr) {
                 self->freeBuffer(buf);
             } else {
