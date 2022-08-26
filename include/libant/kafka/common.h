@@ -21,6 +21,7 @@
 #ifndef LIBANT_INCLUDE_LIBANT_KAFKA_COMMON_H_
 #define LIBANT_INCLUDE_LIBANT_KAFKA_COMMON_H_
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -32,6 +33,17 @@ namespace ant {
 using KafkaErrCode = RdKafka::ErrorCode;
 
 /**
+ * KafkaConfException
+ */
+class KafkaConfException : public std::invalid_argument {
+public:
+    KafkaConfException(const std::string& msg)
+        : std::invalid_argument(msg)
+    {
+    }
+};
+
+/**
  * KafkaGlobalConfig
  */
 class KafkaGlobalConfig {
@@ -41,14 +53,31 @@ public:
      * Sets a global configuration
      * @param key
      * @param value
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool Set(const std::string& key, const std::string& value, std::string& errMessage)
+    {
+        return conf_->set(key, value, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets a global configuration
+     * @param key
+     * @param value
+     * @throw KafkaConfException on error
      */
     void Set(const std::string& key, const std::string& value)
     {
-        configs_[key] = value;
+        std::string err;
+        if (conf_->set(key, value, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
     }
 
 private:
-    std::unordered_map<std::string, std::string> configs_;
+    std::unique_ptr<RdKafka::Conf> conf_{RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL)};
 };
 
 /**
@@ -99,14 +128,31 @@ public:
      * Sets a topic configuration
      * @param key
      * @param value
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool Set(const std::string& key, const std::string& value, std::string& errMessage)
+    {
+        return conf_->set(key, value, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets a topic configuration
+     * @param key
+     * @param value
+     * @throw KafkaConfException on error
      */
     void Set(const std::string& key, const std::string& value)
     {
-        configs_[key] = value;
+        std::string err;
+        if (conf_->set(key, value, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
     }
 
 private:
-    std::unordered_map<std::string, std::string> configs_;
+    std::unique_ptr<RdKafka::Conf> conf_{RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC)};
 };
 
 inline void setConfig(RdKafka::Conf* conf, const std::string& key, const std::string& value)
