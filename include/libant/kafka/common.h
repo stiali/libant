@@ -44,6 +44,89 @@ public:
 };
 
 /**
+ * KafkaTopicConfig
+ */
+class KafkaTopicConfig {
+public:
+    friend class KafkaGlobalConfig;
+    friend class KafkaProducer;
+
+    // For Producer
+
+    // This field indicates the number of acknowledgements the leader broker must receive from ISR brokers before responding to the request:
+    // 0=Broker does not send any response/ack to client, -1 or all=Broker will block until message is committed by all in sync replicas (ISRs).
+    // If there are less than min.insync.replicas (broker configuration) in the ISR set the produce request will fail.
+    // Range: -1 .. 1000. Default: -1
+    static const std::string kRequestRequiredAcks;
+    // The ack timeout of the producer request in milliseconds. This value is only enforced by the broker and relies on request.required.acks being != 0.
+    // Range: 1 .. 900000. Default: 30000
+    static const std::string kRequestTimeoutMS;
+    // Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery.
+    // A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries).
+    // Delivery error occurs when either the retry count or the message timeout are exceeded.
+    // The message timeout is automatically adjusted to transaction.timeout.ms if transactional.id is configured.
+    // Range: 0 .. 2147483647. Default: 300000
+    static const std::string kMessageTimeoutMS;
+    // Partitioner: random - random distribution, consistent - CRC32 hash of key (Empty and NULL keys are mapped to single partition),
+    //              consistent_random - CRC32 hash of key (Empty and NULL keys are randomly partitioned),
+    //              murmur2 - Java Producer compatible Murmur2 hash of key (NULL keys are mapped to single partition),
+    //              murmur2_random - Java Producer compatible Murmur2 hash of key (NULL keys are randomly partitioned.
+    //                               This is functionally equivalent to the default partitioner in the Java Producer.),
+    //              fnv1a - FNV-1a hash of key (NULL keys are mapped to single partition),
+    //              fnv1a_random - FNV-1a hash of key (NULL keys are randomly partitioned).
+    // Default: consistent_random
+    static const std::string kPartitioner;
+    // Compression codec to use for compressing message sets. inherit = inherit global compression.codec configuration.
+    // Range: none, gzip, snappy, lz4, zstd, inherit. Default: inherit
+    static const std::string kCompressionCodec;
+    // Compression level parameter for algorithm selected by configuration property compression.codec.
+    // Higher values will result in better compression at the cost of more CPU usage.
+    // Usable range is algorithm-dependent: [0-9] for gzip; [0-12] for lz4; only 0 for snappy; -1 = codec-dependent default compression level.
+    // Default: -1
+    static const std::string kCompressionLevel;
+
+    // For Consumer
+
+    // Action to take when there is no initial offset in offset store or the desired offset is out of range:
+    //     'smallest','earliest' - automatically reset the offset to the smallest offset,
+    //     'largest','latest' - automatically reset the offset to the largest offset,
+    //     'error' - trigger an error (ERR__AUTO_OFFSET_RESET) which is retrieved by consuming messages and checking 'message->err'.
+    // Default: largest
+    static const std::string kAutoOffsetReset;
+
+public:
+    /**
+     * Sets a topic configuration
+     * @param key
+     * @param value
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool Set(const std::string& key, const std::string& value, std::string& errMessage)
+    {
+        return conf_->set(key, value, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets a topic configuration
+     * @param key
+     * @param value
+     * @throw KafkaConfException on error
+     */
+    void Set(const std::string& key, const std::string& value)
+    {
+        std::string err;
+        if (conf_->set(key, value, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
+    }
+
+private:
+    std::unique_ptr<RdKafka::Conf> conf_{RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC)};
+};
+
+/**
  * KafkaGlobalConfig
  */
 class KafkaGlobalConfig {
@@ -51,8 +134,13 @@ public:
     friend class KafkaConsumer;
     friend class KafkaProducer;
 
+    // For Both
+
     // Initial list of brokers as a CSV list of broker host or host:port. The application may also add brokers during runtime.
     static const std::string kBrokerList;
+
+    // For Consumer
+
     // Client group id string. All clients sharing the same group.id belong to the same group.
     static const std::string kGroupID;
     // Automatically and periodically commit offsets in the background.
@@ -88,6 +176,96 @@ public:
     {
         std::string err;
         if (conf_->set(key, value, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
+    }
+
+    /**
+     * Sets default topic configuration for automatically subscribed topics
+     * @param topicCfg
+     * @param errMessage
+     * @return true on success, and the underlying memory of topicCfg is freed and should no longer be reused.
+     *         false on error, topicCfg is left untouched.
+     */
+    bool SetDefaultTopicConf(KafkaTopicConfig& topicCfg, std::string& errMessage)
+    {
+        defTopicConf_.swap(topicCfg.conf_);
+        if (conf_->set("default_topic_conf", defTopicConf_.get(), errMessage) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return true;
+        }
+        defTopicConf_.swap(topicCfg.conf_);
+        return false;
+    }
+
+    /**
+     * Sets default topic configuration for automatically subscribed topics
+     * @param topicCfg
+     * @warning On success, the underlying memory of topicCfg is freed and should no longer be reused.
+     *          On error, topicCfg is left untouched.
+     */
+    void SetDefaultTopicConf(KafkaTopicConfig& topicCfg)
+    {
+        defTopicConf_.swap(topicCfg.conf_);
+        std::string err;
+        if (conf_->set("default_topic_conf", defTopicConf_.get(), err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        defTopicConf_.swap(topicCfg.conf_);
+        throw KafkaConfException(err);
+    }
+
+    /**
+     * Sets client's certificates
+     * @param certType
+     * @param certEnc
+     * @param buffer
+     * @param size
+     * @param errMessage
+     * @return true on success, false on error
+     */
+    bool SetSslCert(RdKafka::CertificateType certType, RdKafka::CertificateEncoding certEnc, const void* buffer, size_t size, std::string& errMessage)
+    {
+        return conf_->set_ssl_cert(certType, certEnc, buffer, size, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets client's certificates
+     * @param certType
+     * @param certEnc
+     * @param buffer
+     * @param size
+     * @throw KafkaConfException on error
+     */
+    void SetSslCert(RdKafka::CertificateType certType, RdKafka::CertificateEncoding certEnc, const void* buffer, size_t size)
+    {
+        std::string err;
+        if (conf_->set_ssl_cert(certType, certEnc, buffer, size, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
+    }
+
+    /**
+     * Sets Callback to verify the broker certificate chain
+     * @param cb
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool SetSslCertificateVerifyCallback(RdKafka::SslCertificateVerifyCb* cb, std::string& errMessage)
+    {
+        return conf_->set("ssl.certificate.verify_cb", cb, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets Callback to verify the broker certificate chain
+     * @param cb
+     * @throw KafkaConfException on error
+     */
+    void SetSslCertificateVerifyCallback(RdKafka::SslCertificateVerifyCb* cb)
+    {
+        std::string err;
+        if (conf_->set("ssl.certificate.verify_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
             return;
         }
         throw KafkaConfException(err);
@@ -168,85 +346,59 @@ public:
         throw KafkaConfException(err);
     }
 
-private:
-    std::unique_ptr<RdKafka::Conf> conf_{RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL)};
-};
-
-/**
- * KafkaTopicConfig
- */
-class KafkaTopicConfig {
-public:
-    friend class KafkaProducer;
-
-    // This field indicates the number of acknowledgements the leader broker must receive from ISR brokers before responding to the request:
-    // 0=Broker does not send any response/ack to client, -1 or all=Broker will block until message is committed by all in sync replicas (ISRs).
-    // If there are less than min.insync.replicas (broker configuration) in the ISR set the produce request will fail.
-    // Range: -1 .. 1000. Default: -1
-    static const std::string kRequestRequiredAcks;
-    // The ack timeout of the producer request in milliseconds. This value is only enforced by the broker and relies on request.required.acks being != 0.
-    // Range: 1 .. 900000. Default: 30000
-    static const std::string kRequestTimeoutMS;
-    // Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery.
-    // A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries).
-    // Delivery error occurs when either the retry count or the message timeout are exceeded.
-    // The message timeout is automatically adjusted to transaction.timeout.ms if transactional.id is configured.
-    // Range: 0 .. 2147483647. Default: 300000
-    static const std::string kMessageTimeoutMS;
-    // Partitioner: random - random distribution, consistent - CRC32 hash of key (Empty and NULL keys are mapped to single partition),
-    //              consistent_random - CRC32 hash of key (Empty and NULL keys are randomly partitioned),
-    //              murmur2 - Java Producer compatible Murmur2 hash of key (NULL keys are mapped to single partition),
-    //              murmur2_random - Java Producer compatible Murmur2 hash of key (NULL keys are randomly partitioned.
-    //                               This is functionally equivalent to the default partitioner in the Java Producer.),
-    //              fnv1a - FNV-1a hash of key (NULL keys are mapped to single partition),
-    //              fnv1a_random - FNV-1a hash of key (NULL keys are randomly partitioned).
-    // Default: consistent_random
-    static const std::string kPartitioner;
-    // Compression codec to use for compressing message sets. inherit = inherit global compression.codec configuration.
-    // Range: none, gzip, snappy, lz4, zstd, inherit. Default: inherit
-    static const std::string kCompressionCodec;
-    // Compression level parameter for algorithm selected by configuration property compression.codec.
-    // Higher values will result in better compression at the cost of more CPU usage.
-    // Usable range is algorithm-dependent: [0-9] for gzip; [0-12] for lz4; only 0 for snappy; -1 = codec-dependent default compression level.
-    // Default: -1
-    static const std::string kCompressionLevel;
-    // Action to take when there is no initial offset in offset store or the desired offset is out of range:
-    //     'smallest','earliest' - automatically reset the offset to the smallest offset,
-    //     'largest','latest' - automatically reset the offset to the largest offset,
-    //     'error' - trigger an error (ERR__AUTO_OFFSET_RESET) which is retrieved by consuming messages and checking 'message->err'.
-    // Default: largest
-    static const std::string kAutoOffsetReset;
-
-public:
     /**
-     * Sets a topic configuration
-     * @param key
-     * @param value
+     * Sets Socket creation callback to provide race-free CLOEXEC
+     * @param cb
      * @param errMessage
      * @return true on success, false on error and errMessage contains the error message.
      */
-    bool Set(const std::string& key, const std::string& value, std::string& errMessage)
+    bool SetSocketCallback(RdKafka::SocketCb* cb, std::string& errMessage)
     {
-        return conf_->set(key, value, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+        return conf_->set("socket_cb", cb, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
     }
 
     /**
-     * Sets a topic configuration
-     * @param key
-     * @param value
+     * Sets Socket creation callback to provide race-free CLOEXEC
+     * @param cb
      * @throw KafkaConfException on error
      */
-    void Set(const std::string& key, const std::string& value)
+    void SetSocketCallback(RdKafka::SocketCb* cb)
     {
         std::string err;
-        if (conf_->set(key, value, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+        if (conf_->set("socket_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
+    }
+
+    /**
+     * Sets File open callback to provide race-free CLOEXEC
+     * @param cb
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool SetOpenCallback(RdKafka::OpenCb* cb, std::string& errMessage)
+    {
+        return conf_->set("open_cb", cb, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets File open callback to provide race-free CLOEXEC
+     * @param cb
+     * @throw KafkaConfException on error
+     */
+    void SetOpenCallback(RdKafka::OpenCb* cb)
+    {
+        std::string err;
+        if (conf_->set("open_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
             return;
         }
         throw KafkaConfException(err);
     }
 
 private:
-    std::unique_ptr<RdKafka::Conf> conf_{RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC)};
+    std::unique_ptr<RdKafka::Conf> defTopicConf_;
+    std::unique_ptr<RdKafka::Conf> conf_{RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL)};
 };
 
 /**
