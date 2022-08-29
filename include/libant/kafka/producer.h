@@ -75,8 +75,13 @@ public:
 	 */
     KafkaErrCode Produce(const std::string& topic, const std::string& payload, void* msgOpaque = nullptr)
     {
-        return producer_->produce(topic, RdKafka::Topic::PARTITION_UA, RdKafka::Producer::RK_MSG_COPY, const_cast<char*>(payload.data()), payload.size(),
-                                  nullptr, 0, 0, msgOpaque);
+        auto r = producer_->produce(topic, RdKafka::Topic::PARTITION_UA, RdKafka::Producer::RK_MSG_COPY, const_cast<char*>(payload.data()), payload.size(),
+                                    nullptr, 0, 0, msgOpaque);
+        if (r == RdKafka::ERR_NO_ERROR) {
+            return RdKafka::ERR_NO_ERROR;
+        }
+        errMsg_ = RdKafka::err2str(r);
+        return r;
     }
 
     /**
@@ -107,6 +112,7 @@ public:
             return RdKafka::ERR_NO_ERROR;
         }
         headers.headers_.reset(h);
+        errMsg_ = RdKafka::err2str(r);
         return r;
     }
 

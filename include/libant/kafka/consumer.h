@@ -98,24 +98,24 @@ public:
 
     /**
 	 * @brief Consume a message or error event. A corresponding callback will be triggered
-	 * @note use delete to free message
+     * @param timeoutMS: 0 for non-blocking, -1 for block as long as it takes to get a Message
 	 * @returns One of:
 	 *  - proper message (Message::err() is ERR_NO_ERROR)
 	 *  - error event (Message::err() is != ERR_NO_ERROR)
 	 *  - timeout due to no message or event in timeoutMS
 	 *    (RdKafka::Message::err() is ERR__TIMED_OUT)
 	 */
-    Message* Consume(int timeoutMS)
+    std::unique_ptr<Message> Consume(int timeoutMS)
     {
-        return consumer_->consume(timeoutMS);
+        return std::unique_ptr<Message>(consumer_->consume(timeoutMS));
     }
 
     /**
 	 * @brief Commit offset asynchronously
 	 */
-    void AsyncCommit(Message* msg)
+    void AsyncCommit(const std::unique_ptr<Message>& msg)
     {
-        consumer_->commitAsync(msg);
+        consumer_->commitAsync(msg.get());
     }
 
     /**
