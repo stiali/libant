@@ -1,4 +1,5 @@
 #include <memory>
+#include <libant/utils/likely.h>
 #include <libant/kafka/producer.h>
 
 using namespace std;
@@ -8,77 +9,24 @@ namespace ant {
 //===========================================================================
 // Public methods
 //===========================================================================
-KafkaProducer::KafkaProducer(const std::string& brokers, const std::string& topic, RdKafka::DeliveryReportCb* drcb, RdKafka::EventCb* evcb)
+
+KafkaErrCode KafkaProducer::Produce(const std::string& topic, const std::string& payload, void* msgOpaque)
 {
-    auto conf = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
-    unique_ptr<RdKafka::Conf> confForAutoDel(conf); // for auto delete when throwing exception
+    auto it = topics_.find(topic);
+    if (unlikely(it == topics_.end())) {
+        auto newTopic = RdKafka::Topic::create(producer_.get(), topic, nullptr, errMsg_);
+        if (unlikely(!newTopic)) {
+            return RdKafka::ERR__UNKNOWN_TOPIC;
+        }
 
-    setConfig(conf, "metadata.broker.list", brokers);
-    if (evcb) {
-        setConfig(conf, "event_cb", evcb);
+        auto r = topics_.emplace(topic, unique_ptr<RdKafka::Topic>(newTopic));
+        it = r.first;
     }
-    if (drcb) {
-        setConfig(conf, "dr_cb", drcb);
-    }
-
-    string errstr;
-    auto tmpProducer = RdKafka::Producer::create(conf, errstr);
-    if (!tmpProducer) {
-        throw std::runtime_error("Failed to create producer! err=" + errstr);
-    }
-    unique_ptr<RdKafka::Producer> producer(tmpProducer); // for auto delete when throwing exception
-
-    topic_ = RdKafka::Topic::create(tmpProducer, topic, nullptr, errstr);
-    if (!topic_) {
-        throw std::runtime_error("Failed to create topic! topic=" + topic + " err=" + errstr);
-    }
-
-    producer_ = producer.release();
-}
-
-KafkaErrCode KafkaProducer::SyncProduce(const std::string& payload)
-{
-    KafkaErrCode err = static_cast<KafkaErrCode>(-12345);
-
-    producer_->produce(topic_, RdKafka::Topic::PARTITION_UA, RdKafka::Producer::RK_MSG_COPY, const_cast<char*>(payload.data()), payload.size(), nullptr, &err);
-    while (err == static_cast<KafkaErrCode>(-12345)) {
-        Poll(1000);
-    }
-
-    return err;
-}
-
-//=====================================================================================================================
-
-KafkaProducer* KafkaProducerPool::Get()
-{
-    lock_.lock();
-    if (!pooledProducers_.empty()) {
-        auto cli = pooledProducers_.front();
-        pooledProducers_.pop_front();
-        lock_.unlock();
-        return cli;
-    }
-    lock_.unlock();
-
-    try {
-        return new KafkaProducer(brokers_, topic_, drcb_, evcb_);
-    } catch (...) {
-    }
-
-    return nullptr;
-}
-
-void KafkaProducerPool::Put(KafkaProducer* producer)
-{
-    lock_.lock();
-    if (pooledProducers_.size() < maxPooledProducers_) {
-        pooledProducers_.emplace_back(producer);
-        lock_.unlock();
-    } else {
-        lock_.unlock();
-        delete producer;
-    }
+    // Message is dequeued only after delivery report callback is called.
+    // So don't retry immediately after Produce() tells us that the queue is full.
+    // Retry periodically after Poll().
+    return producer_->produce(it->second.get(), RdKafka::Topic::PARTITION_UA, RdKafka::Producer::RK_MSG_COPY, const_cast<char*>(payload.data()), payload.size(),
+                              nullptr, msgOpaque);
 }
 
 } // namespace ant

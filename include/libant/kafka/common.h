@@ -48,6 +48,8 @@ public:
  */
 class KafkaGlobalConfig {
 public:
+    friend class KafkaProducer;
+
     // Initial list of brokers as a CSV list of broker host or host:port. The application may also add brokers during runtime.
     static const std::string kBrokerList;
 
