@@ -2,6 +2,10 @@
 
 namespace ant {
 
+// KafkaGlobalConfig static variables
+const std::string KafkaGlobalConfig::kBrokerList = "metadata.broker.list";
+
+// KafkaTopicConfig static variables
 const std::string KafkaTopicConfig::kRequestRequiredAcks = "request.required.acks";
 const std::string KafkaTopicConfig::kRequestTimeoutMS = "request.timeout.ms";
 const std::string KafkaTopicConfig::kMessageTimeoutMS = "message.timeout.ms";

@@ -48,6 +48,9 @@ public:
  */
 class KafkaGlobalConfig {
 public:
+    // Initial list of brokers as a CSV list of broker host or host:port. The application may also add brokers during runtime.
+    static const std::string kBrokerList;
+
 public:
     /**
      * Sets a global configuration
@@ -71,6 +74,56 @@ public:
     {
         std::string err;
         if (conf_->set(key, value, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
+    }
+
+    /**
+     * Sets Delivery Report Callback
+     * @param cb
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool SetDeliveryReportCallback(RdKafka::DeliveryReportCb* cb, std::string& errMessage)
+    {
+        return conf_->set("dr_cb", cb, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets Delivery Report Callback
+     * @param cb
+     * @throw KafkaConfException on error
+     */
+    void SetDeliveryReportCallback(RdKafka::DeliveryReportCb* cb)
+    {
+        std::string err;
+        if (conf_->set("dr_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
+    }
+
+    /**
+     * Sets Event Callback
+     * @param cb
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool SetDeliveryReportCallback(RdKafka::EventCb* cb, std::string& errMessage)
+    {
+        return conf_->set("event_cb", cb, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets Event Callback
+     * @param cb
+     * @throw KafkaConfException on error
+     */
+    void SetDeliveryReportCallback(RdKafka::EventCb* cb)
+    {
+        std::string err;
+        if (conf_->set("event_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
             return;
         }
         throw KafkaConfException(err);
