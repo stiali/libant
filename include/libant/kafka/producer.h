@@ -59,6 +59,7 @@ public:
 
     /**
 	 * @brief Send a message to a kafka broker asynchronously
+     * @param topic topic name
 	 * @param payload message payload
 	 * @param msgOpaque passed to delivery report callback as it is
 	 * @return
@@ -67,8 +68,47 @@ public:
 	 *  - ERR_MSG_SIZE_TOO_LARGE - messages.max.bytes
 	 *  - ERR__UNKNOWN_PARTITION
 	 *  - ERR__UNKNOWN_TOPIC
+     * @warning
+     *  Message is dequeued only after delivery report callback is called.
+     *  So don't retry immediately after Produce() tells us that the queue is full.
+     *  Retry periodically after Poll().
 	 */
-    KafkaErrCode Produce(const std::string& topic, const std::string& payload, void* msgOpaque = nullptr);
+    KafkaErrCode Produce(const std::string& topic, const std::string& payload, void* msgOpaque = nullptr)
+    {
+        return producer_->produce(topic, RdKafka::Topic::PARTITION_UA, RdKafka::Producer::RK_MSG_COPY, const_cast<char*>(payload.data()), payload.size(),
+                                  nullptr, 0, 0, msgOpaque);
+    }
+
+    /**
+	 * @brief Send a message to a kafka broker asynchronously
+     * @param topic topic name
+	 * @param payload message payload
+     * @param headers Headers to be sent alongside with the message payload
+	 * @param msgOpaque passed to delivery report callback as it is
+	 * @return
+	 *  - ERR_NO_ERROR           - Success
+	 *  - ERR__QUEUE_FULL        - queue.buffering.max.message
+	 *  - ERR_MSG_SIZE_TOO_LARGE - messages.max.bytes
+	 *  - ERR__UNKNOWN_PARTITION
+	 *  - ERR__UNKNOWN_TOPIC
+     * @warning
+     *  The underlying memory for headers will be freed if the Produce() call succeeds, or left untouched if Produce() fails.
+     *
+     *  Message is dequeued only after delivery report callback is called.
+     *  So don't retry immediately after Produce() tells us that the queue is full.
+     *  Retry periodically after Poll().
+	 */
+    KafkaErrCode Produce(const std::string& topic, const std::string& payload, KafkaHeaders& headers, void* msgOpaque = nullptr)
+    {
+        auto h = headers.headers_.release();
+        auto r = producer_->produce(topic, RdKafka::Topic::PARTITION_UA, RdKafka::Producer::RK_MSG_COPY, const_cast<char*>(payload.data()), payload.size(),
+                                    nullptr, 0, 0, h, msgOpaque);
+        if (r == RdKafka::ERR_NO_ERROR) {
+            return RdKafka::ERR_NO_ERROR;
+        }
+        headers.headers_.reset(h);
+        return r;
+    }
 
     /**
 	 * @brief Call this method periodically to trigger callbacks.

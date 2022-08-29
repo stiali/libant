@@ -140,6 +140,8 @@ private:
  */
 class KafkaTopicConfig {
 public:
+    friend class KafkaProducer;
+
     // This field indicates the number of acknowledgements the leader broker must receive from ISR brokers before responding to the request:
     // 0=Broker does not send any response/ack to client, -1 or all=Broker will block until message is committed by all in sync replicas (ISRs).
     // If there are less than min.insync.replicas (broker configuration) in the ISR set the produce request will fail.
@@ -210,6 +212,33 @@ private:
     std::unique_ptr<RdKafka::Conf> conf_{RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC)};
 };
 
+/**
+ * KafkaTopicConfig
+ */
+class KafkaHeaders {
+public:
+    friend class KafkaProducer;
+
+public:
+    /**
+     * @brief Adds a Header to the end of the list.
+     *
+     * Convenience method for adding a std::string as a value for the header.
+     *
+     * @param key header key/name
+     * @param value value string
+     *
+     * @returns a KafkaErrCode signalling success or failure to add the header.
+     */
+    virtual KafkaErrCode Add(const std::string& key, const std::string& value)
+    {
+        return headers_->add(key, value);
+    }
+
+private:
+    std::unique_ptr<RdKafka::Headers> headers_{RdKafka::Headers::create()};
+};
+
 inline void setConfig(RdKafka::Conf* conf, const std::string& key, const std::string& value)
 {
     std::string errstr;
@@ -229,15 +258,6 @@ inline void setConfig(RdKafka::Conf* conf, const std::string& key, RdKafka::Even
 }
 
 inline void setConfig(RdKafka::Conf* conf, const std::string& key, RdKafka::OffsetCommitCb* cbObj)
-{
-    std::string errstr;
-    if (conf->set(key, cbObj, errstr) == RdKafka::Conf::CONF_OK) {
-        return;
-    }
-    throw std::runtime_error("Failed to set '" + key + "'! err=" + errstr);
-}
-
-inline void setConfig(RdKafka::Conf* conf, const std::string& key, RdKafka::DeliveryReportCb* cbObj)
 {
     std::string errstr;
     if (conf->set(key, cbObj, errstr) == RdKafka::Conf::CONF_OK) {
