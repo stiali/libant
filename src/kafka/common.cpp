@@ -4,6 +4,9 @@ namespace ant {
 
 // KafkaGlobalConfig static variables
 const std::string KafkaGlobalConfig::kBrokerList = "metadata.broker.list";
+const std::string KafkaGlobalConfig::kGroupID = "group.id";
+const std::string KafkaGlobalConfig::kEnableAutoCommit = "enable.auto.commit";
+const std::string KafkaGlobalConfig::kEnableAutoOffsetStore = "enable.auto.offset.store";
 
 // KafkaTopicConfig static variables
 const std::string KafkaTopicConfig::kRequestRequiredAcks = "request.required.acks";

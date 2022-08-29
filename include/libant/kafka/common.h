@@ -48,10 +48,22 @@ public:
  */
 class KafkaGlobalConfig {
 public:
+    friend class KafkaConsumer;
     friend class KafkaProducer;
 
     // Initial list of brokers as a CSV list of broker host or host:port. The application may also add brokers during runtime.
     static const std::string kBrokerList;
+    // Client group id string. All clients sharing the same group.id belong to the same group.
+    static const std::string kGroupID;
+    // Automatically and periodically commit offsets in the background.
+    // Note: setting this to false does not prevent the consumer from fetching previously committed start offsets.
+    // To circumvent this behaviour set specific start offsets per partition in the call to assign().
+    // Range: true, false. Default: true
+    static const std::string kEnableAutoCommit;
+    // Automatically store offset of last message provided to application.
+    // The offset store is an in-memory store of the next offset to (auto-)commit for each partition.
+    // Range: true, false. Default: true
+    static const std::string kEnableAutoOffsetStore;
 
 public:
     /**
@@ -112,7 +124,7 @@ public:
      * @param errMessage
      * @return true on success, false on error and errMessage contains the error message.
      */
-    bool SetDeliveryReportCallback(RdKafka::EventCb* cb, std::string& errMessage)
+    bool SetEventCallback(RdKafka::EventCb* cb, std::string& errMessage)
     {
         return conf_->set("event_cb", cb, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
     }
@@ -122,10 +134,35 @@ public:
      * @param cb
      * @throw KafkaConfException on error
      */
-    void SetDeliveryReportCallback(RdKafka::EventCb* cb)
+    void SetEventCallback(RdKafka::EventCb* cb)
     {
         std::string err;
         if (conf_->set("event_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
+    }
+
+    /**
+     * Sets Offset Commit Callback
+     * @param cb
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool SetOffsetCommitCallback(RdKafka::OffsetCommitCb* cb, std::string& errMessage)
+    {
+        return conf_->set("offset_commit_cb", cb, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets Offset Commit Callback
+     * @param cb
+     * @throw KafkaConfException on error
+     */
+    void SetOffsetCommitCallback(RdKafka::OffsetCommitCb* cb)
+    {
+        std::string err;
+        if (conf_->set("offset_commit_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
             return;
         }
         throw KafkaConfException(err);

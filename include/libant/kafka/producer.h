@@ -133,7 +133,6 @@ private:
     KafkaGlobalConfig cfg_;
     std::string errMsg_;
     std::unique_ptr<RdKafka::Producer> producer_;
-    std::unordered_map<std::string, std::unique_ptr<RdKafka::Topic>> topics_;
 };
 
 } // namespace ant

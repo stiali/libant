@@ -37,19 +37,63 @@ public:
 public:
     /**
 	 * @brief Constructor
-	 * @param brokers broker addresses separated by ','. eg: "1.1.1.1:1111,2.2.2.2:2222"
-	 * @param groupID
-	 * @param topics topic list separated by ','
-     * @param offsetCb offset commit callback
-     * @param evcb event callback
+	 * @param cfg global config
 	 */
-    KafkaConsumer(const std::string& brokers, const std::string& groupID, const std::string& topics, RdKafka::OffsetCommitCb* offsetCb = nullptr,
-                  RdKafka::EventCb* evcb = nullptr);
+    KafkaConsumer(KafkaGlobalConfig cfg)
+        : cfg_(std::move(cfg))
+    {
+    }
 
     ~KafkaConsumer()
     {
         // consumer_->close(); // TODO andy: It sometimes blocks forever! Need it or not?
-        delete consumer_;
+    }
+
+    /**
+     * Initialize the KafkaConsumer object.
+     * @return true on success, false on error and ErrorMessage() could be called to get the error message
+     */
+    bool Init()
+    {
+        consumer_ = std::unique_ptr<RdKafka::KafkaConsumer>(RdKafka::KafkaConsumer::create(cfg_.conf_.get(), errMsg_));
+        if (consumer_) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @brief Update the subscription set to \p topics.
+     *
+     * Any previous subscription will be unassigned and unsubscribed first.
+     *
+     * The subscription set denotes the desired topics to consume and this
+     * set is provided to the partition assignor (one of the elected group
+     * members) for all clients which then uses the configured
+     * \c partition.assignment.strategy to assign the subscription sets'
+     * topics' partitions to the consumers, depending on their subscription.
+     *
+     * The result of such an assignment is a rebalancing which is either
+     * handled automatically in librdkafka or can be overridden by the application
+     * by providing a RdKafka::RebalanceCb.
+     *
+     * The rebalancing passes the assigned partition set to
+     * RdKafka::KafkaConsumer::assign() to update what partitions are actually
+     * being fetched by the KafkaConsumer.
+     *
+     * Regex pattern matching automatically performed for topics prefixed
+     * with \c \"^\" (e.g. \c \"^myPfx[0-9]_.*\"
+     *
+     * @returns an error if the provided list of topics is invalid and ErrorMessage() could be called to get the error message.
+     */
+    KafkaErrCode Subscribe(const std::vector<std::string>& topics)
+    {
+        auto r = consumer_->subscribe(topics);
+        if (r == RdKafka::ERR_NO_ERROR) {
+            return RdKafka::ERR_NO_ERROR;
+        }
+        errMsg_ = RdKafka::err2str(r);
+        return r;
     }
 
     /**
@@ -74,8 +118,19 @@ public:
         consumer_->commitAsync(msg);
     }
 
+    /**
+     * Gets the last error message
+     * @return last error message
+     */
+    const std::string& ErrorMessage() const
+    {
+        return errMsg_;
+    }
+
 private:
-    RdKafka::KafkaConsumer* consumer_;
+    KafkaGlobalConfig cfg_;
+    std::string errMsg_;
+    std::unique_ptr<RdKafka::KafkaConsumer> consumer_;
 };
 
 } // namespace ant
