@@ -3,6 +3,7 @@
 namespace ant {
 
 // KafkaGlobalConfig static variables
+// For Both
 const std::string KafkaGlobalConfig::kBrokerList = "metadata.broker.list";
 const std::string KafkaGlobalConfig::kMessageMaxBytes = "message.max.bytes";
 const std::string KafkaGlobalConfig::kMessageCopyMaxBytes = "message.copy.max.bytes";
@@ -76,28 +77,27 @@ const std::string KafkaGlobalConfig::kSaslOAuthBearerTokenEndpointURL = "sasl.oa
 const std::string KafkaGlobalConfig::kPluginLibraryPaths = "plugin.library.paths";
 const std::string KafkaGlobalConfig::kInterceptors = "interceptors";
 const std::string KafkaGlobalConfig::kClientRack = "client.rack";
-
+// For Producer
+const std::string KafkaGlobalConfig::kTransactionalID = "transactional.id";
+const std::string KafkaGlobalConfig::kTransactionTimeoutMS = "transaction.timeout.ms";
+const std::string KafkaGlobalConfig::kEnableIdempotence = "enable.idempotence";
+const std::string KafkaGlobalConfig::kQueueBufferingMaxMessages = "queue.buffering.max.messages";
+const std::string KafkaGlobalConfig::kQueueBufferingMaxKBytes = "queue.buffering.max.kbytes";
+const std::string KafkaGlobalConfig::kQueueBufferingMaxMS = "queue.buffering.max.ms";
+const std::string KafkaGlobalConfig::kMessageSendMaxRetries = "message.send.max.retries";
+const std::string KafkaGlobalConfig::kRetryBackoffMS = "retry.backoff.ms";
+const std::string KafkaGlobalConfig::kQueueBufferingBackpressureThreshold = "queue.buffering.backpressure.threshold";
+const std::string KafkaGlobalConfig::kCompressionCodec = "compression.codec";
+const std::string KafkaGlobalConfig::kBatchNumMessages = "batch.num.messages";
+const std::string KafkaGlobalConfig::kBatchSize = "batch.size";
+const std::string KafkaGlobalConfig::kDeliveryReportOnlyError = "delivery.report.only.error";
+const std::string KafkaGlobalConfig::kStickyPartitioningLingerMS = "sticky.partitioning.linger.ms";
+// For Consumer
 const std::string k = "";
 
 const std::string KafkaGlobalConfig::kGroupID = "group.id";
 const std::string KafkaGlobalConfig::kEnableAutoCommit = "enable.auto.commit";
 const std::string KafkaGlobalConfig::kEnableAutoOffsetStore = "enable.auto.offset.store";
-
-//transactional.id                         |  P  |                 |               | high       | Enables the transactional producer. The transactional.id is used to identify the same transactional producer instance across process restarts. It allows the producer to guarantee that transactions corresponding to earlier instances of the same producer have been finalized prior to starting any new transactions, and that any zombie instances are fenced off. If no transactional.id is provided, then the producer is limited to idempotent delivery (if enable.idempotence is set). Requires broker version >= 0.11.0. <br>*Type: string*
-//transaction.timeout.ms                   |  P  | 1000 .. 2147483647 |         60000 | medium     | The maximum amount of time in milliseconds that the transaction coordinator will wait for a transaction status update from the producer before proactively aborting the ongoing transaction. If this value is larger than the `transaction.max.timeout.ms` setting in the broker, the init_transactions() call will fail with ERR_INVALID_TRANSACTION_TIMEOUT. The transaction timeout automatically adjusts `message.timeout.ms` and `socket.timeout.ms`, unless explicitly configured in which case they must not exceed the transaction timeout (`socket.timeout.ms` must be at least 100ms lower than `transaction.timeout.ms`). This is also the default timeout value if no timeout (-1) is supplied to the transactional API methods. <br>*Type: integer*
-//enable.idempotence                       |  P  | true, false     |         false | high       | When set to `true`, the producer will ensure that messages are successfully produced exactly once and in the original produce order. The following configuration properties are adjusted automatically (if not modified by the user) when idempotence is enabled: `max.in.flight.requests.per.connection=5` (must be less than or equal to 5), `retries=INT32_MAX` (must be greater than 0), `acks=all`, `queuing.strategy=fifo`. Producer instantation will fail if user-supplied configuration is incompatible. <br>*Type: boolean*
-//queue.buffering.max.messages             |  P  | 1 .. 10000000   |        100000 | high       | Maximum number of messages allowed on the producer queue. This queue is shared by all topics and partitions. <br>*Type: integer*
-//queue.buffering.max.kbytes               |  P  | 1 .. 2147483647 |       1048576 | high       | Maximum total message size sum allowed on the producer queue. This queue is shared by all topics and partitions. This property has higher priority than queue.buffering.max.messages. <br>*Type: integer*
-//queue.buffering.max.ms                   |  P  | 0 .. 900000     |             5 | high       | Delay in milliseconds to wait for messages in the producer queue to accumulate before constructing message batches (MessageSets) to transmit to brokers. A higher value allows larger and more effective (less overhead, improved compression) batches of messages to accumulate at the expense of increased message delivery latency. <br>*Type: float*
-//message.send.max.retries                 |  P  | 0 .. 2147483647 |    2147483647 | high       | How many times to retry sending a failing Message. **Note:** retrying may cause reordering unless `enable.idempotence` is set to true. <br>*Type: integer*
-//retry.backoff.ms                         |  P  | 1 .. 300000     |           100 | medium     | The backoff time in milliseconds before retrying a protocol request. <br>*Type: integer*
-//queue.buffering.backpressure.threshold   |  P  | 1 .. 1000000    |             1 | low        | The threshold of outstanding not yet transmitted broker requests needed to backpressure the producer's message accumulator. If the number of not yet transmitted requests equals or exceeds this number, produce request creation that would have otherwise been triggered (for example, in accordance with linger.ms) will be delayed. A lower number yields larger and more effective batches. A higher value can improve latency when using compression on slow machines. <br>*Type: integer*
-//compression.codec                        |  P  | none, gzip, snappy, lz4, zstd |          none | medium     | compression codec to use for compressing message sets. This is the default value for all topics, may be overridden by the topic configuration property `compression.codec`.  <br>*Type: enum value*
-//batch.num.messages                       |  P  | 1 .. 1000000    |         10000 | medium     | Maximum number of messages batched in one MessageSet. The total MessageSet size is also limited by batch.size and message.max.bytes. <br>*Type: integer*
-//batch.size                               |  P  | 1 .. 2147483647 |       1000000 | medium     | Maximum size (in bytes) of all messages batched in one MessageSet, including protocol framing overhead. This limit is applied after the first message has been added to the batch, regardless of the first message's size, this is to ensure that messages that exceed batch.size are produced. The total MessageSet size is also limited by batch.num.messages and message.max.bytes. <br>*Type: integer*
-//delivery.report.only.error               |  P  | true, false     |         false | low        | Only provide delivery reports for failed messages. <br>*Type: boolean*
-//dr_msg_cb                                |  P  |                 |               | low        | Delivery report callback (set with rd_kafka_conf_set_dr_msg_cb()) <br>*Type: see dedicated API*
-//sticky.partitioning.linger.ms            |  P  | 0 .. 900000     |            10 | low        | Delay in milliseconds to wait to assign new sticky partitions for each topic. By default, set to double the time of linger.ms. To disable sticky behavior, set to 0. This behavior affects messages with the key NULL in all cases, and messages with key lengths of zero when the consistent_random partitioner is in use. These messages would otherwise be assigned randomly. A higher value allows for more effective batching of these messages. <br>*Type: integer*
 
 //group.id                                 |  C  |                 |               | high       | Client group id string. All clients sharing the same group.id belong to the same group. <br>*Type: string*
 //group.instance.id                        |  C  |                 |               | medium     | Enable static group membership. Static group members are able to leave and rejoin a group within the configured `session.timeout.ms` without prompting a group rebalance. This should be used in combination with a larger `session.timeout.ms` to avoid group rebalances caused by transient unavailability (e.g. process restarts). Requires broker version >= 2.3.0. <br>*Type: string*
