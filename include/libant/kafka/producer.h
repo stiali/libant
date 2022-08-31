@@ -117,6 +117,35 @@ public:
     }
 
     /**
+	 * @brief Send a message to a kafka broker asynchronously
+     * @param topic topic name
+     * @param headers Headers to be sent alongside with the message payload
+	 * @return
+	 *  - ERR_NO_ERROR           - Success
+	 *  - ERR__QUEUE_FULL        - queue.buffering.max.message
+	 *  - ERR_MSG_SIZE_TOO_LARGE - messages.max.bytes
+	 *  - ERR__UNKNOWN_PARTITION
+	 *  - ERR__UNKNOWN_TOPIC
+     * @warning
+     *  The underlying memory for headers will be freed if the Produce() call succeeds, or left untouched if Produce() fails.
+     *
+     *  Message is dequeued only after delivery report callback is called.
+     *  So don't retry immediately after Produce() tells us that the queue is full.
+     *  Retry periodically after Poll().
+	 */
+    KafkaErrCode Produce(const std::string& topic, KafkaHeaders& headers)
+    {
+        auto h = headers.headers_.release();
+        auto r = producer_->produce(topic, RdKafka::Topic::PARTITION_UA, RdKafka::Producer::RK_MSG_COPY, nullptr, 0, nullptr, 0, 0, h, nullptr);
+        if (r == RdKafka::ERR_NO_ERROR) {
+            return RdKafka::ERR_NO_ERROR;
+        }
+        headers.headers_.reset(h);
+        errMsg_ = RdKafka::err2str(r);
+        return r;
+    }
+
+    /**
 	 * @brief Call this method periodically to trigger callbacks.
 	 * @param timeoutMS blocking time in milliseconds. 0 for non-blocking, -1 for block as long as it takes to trigger a callback
 	 * @returns number of callbacks triggered
