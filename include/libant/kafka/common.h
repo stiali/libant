@@ -473,15 +473,99 @@ public:
 
     // Client group id string. All clients sharing the same group.id belong to the same group.
     static const std::string kGroupID;
+    // Enable static group membership. Static group members are able to leave and rejoin a group within the configured `session.timeout.ms`
+    // without prompting a group rebalance. This should be used in combination with a larger `session.timeout.ms` to avoid group rebalances
+    // caused by transient unavailability (e.g. process restarts). Requires broker version >= 2.3.0.
+    static const std::string kGroupInstanceID;
+    // The name of one or more partition assignment strategies. The elected group leader will use a strategy supported by all members of the group to
+    // assign partitions to group members. If there is more than one eligible strategy, preference is determined by the order of this list
+    // (strategies earlier in the list have higher priority). Cooperative and non-cooperative (eager) strategies must not be mixed.
+    // Available strategies: range, roundrobin, cooperative-sticky.
+    // Default: range,roundrobin
+    static const std::string kPartitionAssignmentStrategy;
+    // Client group session and failure detection timeout. The consumer sends periodic heartbeats (heartbeat.interval.ms)
+    // to indicate its liveness to the broker. If no hearts are received by the broker for a group member within the session timeout,
+    // the broker will remove the consumer from the group and trigger a rebalance. The allowed range is configured with the **broker**
+    // configuration properties `group.min.session.timeout.ms` and `group.max.session.timeout.ms`. Also see `max.poll.interval.ms`.
+    // Range: 1 .. 3600000. Default: 45000
+    static const std::string kSessionTimeoutMS;
+    // Group session keepalive heartbeat interval.
+    // Range: 1 .. 3600000. Default: 3000
+    static const std::string kHeartbeatIntervalMS;
+    // Group protocol type. NOTE: Currently, the only supported group protocol type is `consumer`.
+    // Default: consumer
+    static const std::string kGroupProtocolType;
+    // How often to query for the current client group coordinator. If the currently assigned coordinator is down the configured query interval
+    // will be divided by ten to more quickly recover in case of coordinator reassignment.
+    // Range: 1 .. 3600000. Default: 600000
+    static const std::string kCoordinatorQueryIntervalMS;
+    // Maximum allowed time between calls to consume messages (e.g., rd_kafka_consumer_poll()) for high-level consumers.
+    // If this interval is exceeded the consumer is considered failed and the group will rebalance in order to reassign
+    // the partitions to another consumer group member. Warning: Offset commits may be not possible at this point.
+    // Note: It is recommended to set `enable.auto.offset.store=false` for long-time processing applications and then
+    // explicitly store offsets (using offsets_store()) *after* message processing, to make sure offsets are not auto-committed
+    // prior to processing has finished. The interval is checked two times per second. See KIP-62 for more information.
+    // Range: 1 .. 86400000. Default: 300000
+    static const std::string kMaxPollIntervalMS;
     // Automatically and periodically commit offsets in the background.
     // Note: setting this to false does not prevent the consumer from fetching previously committed start offsets.
     // To circumvent this behaviour set specific start offsets per partition in the call to assign().
     // Range: true, false. Default: true
     static const std::string kEnableAutoCommit;
+    // The frequency in milliseconds that the consumer offsets are committed (written) to offset storage.
+    // (0 = disable). This setting is used by the high-level consumer.
+    // Range: 0 .. 86400000. Default: 5000
+    static const std::string kAutoCommitIntervalMS;
     // Automatically store offset of last message provided to application.
     // The offset store is an in-memory store of the next offset to (auto-)commit for each partition.
     // Range: true, false. Default: true
     static const std::string kEnableAutoOffsetStore;
+    // Minimum number of messages per topic+partition librdkafka tries to maintain in the local consumer queue.
+    // Range: 1 .. 10000000. Default: 100000
+    static const std::string kQueuedMinMessages;
+    // Maximum number of kilobytes of queued pre-fetched messages in the local consumer queue. If using the high-level consumer
+    // this setting applies to the single consumer queue, regardless of the number of partitions.
+    // When using the legacy simple consumer or when separate partition queues are used this setting applies per partition.
+    // This value may be overshot by fetch.message.max.bytes. This property has higher priority than queued.min.messages.
+    // Range: 1 .. 2097151. Default: 65536
+    static const std::string kQueuedMaxMessagesKBytes;
+    // Maximum time the broker may wait to fill the Fetch response with fetch.min.bytes of messages.
+    // Range: 0 .. 300000. Default: 500
+    static const std::string kFetchWaitMaxMS;
+    // Initial maximum number of bytes per topic+partition to request when fetching messages from the broker.
+    // If the client encounters a message larger than this value it will gradually try to increase it until the entire message can be fetched.
+    // Range: 1 .. 1000000000. Default: 1048576
+    static const std::string kFetchMessageMaxBytes;
+    // Maximum amount of data the broker shall return for a Fetch request. Messages are fetched in batches by the consumer
+    // and if the first message batch in the first non-empty partition of the Fetch request is larger than this value,
+    // then the message batch will still be returned to ensure the consumer can make progress. The maximum message batch size accepted by
+    // the broker is defined via `message.max.bytes` (broker config) or `max.message.bytes` (broker topic config). `fetch.max.bytes` is automatically
+    // adjusted upwards to be at least `message.max.bytes` (consumer config).
+    // Range: 0 .. 2147483135. Default: 52428800
+    static const std::string kFetchMaxBytes;
+    // Minimum number of bytes the broker responds with. If fetch.wait.max.ms expires the accumulated data will be sent to the client regardless of this setting.
+    // Range: 1 .. 100000000. Default: 1
+    static const std::string kFetchMinBytes;
+    // How long to postpone the next fetch request for a topic+partition in case of a fetch error.
+    // Range: 0 .. 300000. Default: 500
+    static const std::string kFetchErrorBackoffMS;
+    // Controls how to read messages written transactionally: `read_committed` - only return transactional messages which have been committed.
+    // `read_uncommitted` - return all messages, even transactional messages which have been aborted.
+    // Range: read_uncommitted, read_committed. Default: read_committed
+    static const std::string kIsolationLevel;
+    // Emit RD_KAFKA_RESP_ERR__PARTITION_EOF event whenever the consumer reaches the end of a partition.
+    // Range: true, false. Default: false
+    static const std::string kEnablePartitionEOF;
+    // Verify CRC32 of consumed messages, ensuring no on-the-wire or on-disk corruption to the messages occurred.
+    // This check comes at slightly increased CPU usage.
+    // Range: true, false. Default: false
+    static const std::string kCheckCrcs;
+    // Allow automatic topic creation on the broker when subscribing to or assigning non-existent topics.
+    // The broker must also be configured with `auto.create.topics.enable=true` for this configuration to take effect.
+    // Note: The default value (false) is different from the Java consumer (true). Requires broker version >= 0.11.0.0,
+    // for older broker versions only the broker configuration applies.
+    // Range: true, false. Default: false
+    static const std::string kAllowAutoCreateTopics;
 
 public:
     /**
@@ -671,6 +755,56 @@ public:
     {
         std::string err;
         if (conf_->set("event_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
+    }
+
+    /**
+     * Sets Message consume callback
+     * @param cb
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool SetConsumeCallback(RdKafka::ConsumeCb* cb, std::string& errMessage)
+    {
+        return conf_->set("consume_cb", cb, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets Message consume callback
+     * @param cb
+     * @throw KafkaConfException on error
+     */
+    void SetConsumeCallback(RdKafka::ConsumeCb* cb)
+    {
+        std::string err;
+        if (conf_->set("consume_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
+    }
+
+    /**
+     * Sets a callback to be called after consumer group has been rebalanced
+     * @param cb
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool SetRebalanceCallback(RdKafka::RebalanceCb* cb, std::string& errMessage)
+    {
+        return conf_->set("rebalance_cb", cb, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets a callback to be called after consumer group has been rebalanced
+     * @param cb
+     * @throw KafkaConfException on error
+     */
+    void SetRebalanceCallback(RdKafka::RebalanceCb* cb)
+    {
+        std::string err;
+        if (conf_->set("rebalance_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
             return;
         }
         throw KafkaConfException(err);
