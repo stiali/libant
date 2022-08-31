@@ -371,6 +371,37 @@ public:
     // For example: `principalClaimName=azp principal=admin scopeClaimName=roles scope=role1,role2 lifeSeconds=600`.
     // In addition, SASL extensions can be communicated to the broker via `extension_NAME=value`. For example: `principal=admin extension_traceId=123`
     static const std::string kSaslOAuthBearerConfig;
+    // Enable the builtin unsecure JWT OAUTHBEARER token handler if no oauthbearer_refresh_cb has been set.
+    // This builtin handler should only be used for development or testing, and not in production.
+    // Range: true, false. Default: false
+    static const std::string kEnableSaslOAuthBearerUnsecureJwt;
+    // Set to "default" or "oidc" to control which login method to be used. If set to "oidc", the following properties must also be specified:
+    // `sasl.oauthbearer.client.id`, `sasl.oauthbearer.client.secret`, and `sasl.oauthbearer.token.endpoint.url`.
+    // Range: default, oidc. Default: default
+    static const std::string kSaslOAuthBearerMethod;
+    // Public identifier for the application. Must be unique across all clients that the authorization server handles.
+    // Only used when `sasl.oauthbearer.method` is set to "oidc".
+    static const std::string kSaslOAuthBearerClientID;
+    // Client secret only known to the application and the authorization server. This should be a sufficiently random string that is not guessable.
+    // Only used when `sasl.oauthbearer.method` is set to "oidc".
+    static const std::string kSaslOAuthBearerClientSecret;
+    // Client use this to specify the scope of the access request to the broker. Only used when `sasl.oauthbearer.method` is set to "oidc".
+    static const std::string kSaslOAuthBearerScope;
+    // Allow additional information to be provided to the broker. Comma-separated list of key=value pairs.
+    // E.g., "supportFeatureX=true,organizationId=sales-emea".Only used when `sasl.oauthbearer.method` is set to "oidc".
+    static const std::string kSaslOAuthBearerExtensions;
+    // OAuth/OIDC issuer token endpoint HTTP(S) URI used to retrieve token. Only used when `sasl.oauthbearer.method` is set to "oidc".
+    static const std::string kSaslOAuthBearerTokenEndpointURL;
+    // List of plugin libraries to load (; separated). The library search path is platform dependent (see dlopen(3) for Unix and LoadLibrary() for Windows).
+    // If no filename extension is specified the platform-specific extension (such as .dll or .so) will be appended automatically.
+    static const std::string kPluginLibraryPaths;
+    // Interceptors added through rd_kafka_conf_interceptor_add_..() and any configuration handled by interceptors.
+    static const std::string kInterceptors;
+    // A rack identifier for this client. This can be any string value which indicates where this client is physically located.
+    // It corresponds with the broker config `broker.rack`.
+    static const std::string kClientRack;
+
+    // For Producer
 
     // For Consumer
 
@@ -499,6 +530,31 @@ public:
     {
         std::string err;
         if (conf_->set("ssl.certificate.verify_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
+            return;
+        }
+        throw KafkaConfException(err);
+    }
+
+    /**
+     * Sets SASL/OAUTHBEARER token refresh callback. This callback will be triggered when it is time to refresh the client's OAUTHBEARER token.
+     * @param cb
+     * @param errMessage
+     * @return true on success, false on error and errMessage contains the error message.
+     */
+    bool SetOAuthBearerTokenRefreshCallback(RdKafka::OAuthBearerTokenRefreshCb* cb, std::string& errMessage)
+    {
+        return conf_->set("oauthbearer_token_refresh_cb", cb, errMessage) == RdKafka::Conf::ConfResult::CONF_OK;
+    }
+
+    /**
+     * Sets SASL/OAUTHBEARER token refresh callback. This callback will be triggered when it is time to refresh the client's OAUTHBEARER token.
+     * @param cb
+     * @throw KafkaConfException on error
+     */
+    void SetOAuthBearerTokenRefreshCallback(RdKafka::OAuthBearerTokenRefreshCb* cb)
+    {
+        std::string err;
+        if (conf_->set("oauthbearer_token_refresh_cb", cb, err) == RdKafka::Conf::ConfResult::CONF_OK) {
             return;
         }
         throw KafkaConfException(err);
