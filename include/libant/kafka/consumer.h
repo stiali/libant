@@ -35,15 +35,6 @@ public:
     using Message = RdKafka::Message;
 
 public:
-    /**
-	 * @brief Constructor
-	 * @param cfg global config
-	 */
-    KafkaConsumer(KafkaGlobalConfig cfg)
-        : cfg_(std::move(cfg))
-    {
-    }
-
     ~KafkaConsumer()
     {
         // consumer_->close(); // TODO andy: It sometimes blocks forever! Need it or not?
@@ -51,11 +42,12 @@ public:
 
     /**
      * Initialize the KafkaConsumer object.
+     * @param cfg an optional object that will be used instead of the default configuration. The cfg object is reusable after this call.
      * @return true on success, false on error and ErrorMessage() could be called to get the error message
      */
-    bool Init()
+    bool Init(const KafkaGlobalConfig* cfg = nullptr)
     {
-        consumer_ = std::unique_ptr<RdKafka::KafkaConsumer>(RdKafka::KafkaConsumer::create(cfg_.conf_.get(), errMsg_));
+        consumer_ = std::unique_ptr<RdKafka::KafkaConsumer>(RdKafka::KafkaConsumer::create(cfg ? cfg->conf_.get() : nullptr, errMsg_));
         if (consumer_) {
             return true;
         }
@@ -128,7 +120,6 @@ public:
     }
 
 private:
-    KafkaGlobalConfig cfg_;
     std::string errMsg_;
     std::unique_ptr<RdKafka::KafkaConsumer> consumer_;
 };

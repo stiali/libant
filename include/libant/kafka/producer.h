@@ -30,27 +30,21 @@ namespace ant {
  */
 class KafkaProducer {
 public:
-    /**
-	 * @brief Constructor
-	 * @param cfg global config
-	 */
-    KafkaProducer(KafkaGlobalConfig cfg)
-        : cfg_(std::move(cfg))
-    {
-    }
-
     ~KafkaProducer()
     {
-        producer_->flush(3000);
+        if (producer_) {
+            producer_->flush(3000);
+        }
     }
 
     /**
      * Initialize the KafkaProducer object.
+     * @param cfg an optional object that will be used instead of the default configuration. The cfg object is reusable after this call.
      * @return true on success, false on error and ErrorMessage() could be called to get the error message
      */
-    bool Init()
+    bool Init(const KafkaGlobalConfig* cfg = nullptr)
     {
-        producer_ = std::unique_ptr<RdKafka::Producer>(RdKafka::Producer::create(cfg_.conf_.get(), errMsg_));
+        producer_ = std::unique_ptr<RdKafka::Producer>(RdKafka::Producer::create(cfg ? cfg->conf_.get() : nullptr, errMsg_));
         if (producer_) {
             return true;
         }
@@ -165,7 +159,6 @@ public:
     }
 
 private:
-    KafkaGlobalConfig cfg_;
     std::string errMsg_;
     std::unique_ptr<RdKafka::Producer> producer_;
 };
