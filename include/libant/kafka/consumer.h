@@ -32,9 +32,6 @@ namespace ant {
  */
 class KafkaConsumer {
 public:
-    using Message = RdKafka::Message;
-
-public:
     ~KafkaConsumer()
     {
         // consumer_->close(); // TODO andy: It sometimes blocks forever! Need it or not?
@@ -97,15 +94,15 @@ public:
 	 *  - timeout due to no message or event in timeoutMS
 	 *    (RdKafka::Message::err() is ERR__TIMED_OUT)
 	 */
-    std::unique_ptr<Message> Consume(int timeoutMS)
+    std::unique_ptr<KafkaMessage> Consume(int timeoutMS)
     {
-        return std::unique_ptr<Message>(consumer_->consume(timeoutMS));
+        return std::unique_ptr<KafkaMessage>(consumer_->consume(timeoutMS));
     }
 
     /**
 	 * @brief Commit offset asynchronously
 	 */
-    void AsyncCommit(const std::unique_ptr<Message>& msg)
+    void AsyncCommit(const std::unique_ptr<KafkaMessage>& msg)
     {
         consumer_->commitAsync(msg.get());
     }

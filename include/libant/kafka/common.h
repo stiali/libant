@@ -31,6 +31,7 @@
 namespace ant {
 
 using KafkaErrCode = RdKafka::ErrorCode;
+using KafkaMessage = RdKafka::Message;
 
 /**
  * KafkaConfException
