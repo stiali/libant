@@ -107,9 +107,9 @@ public:
 	 *  - timeout due to no message or event in timeoutMS
 	 *    (RdKafka::Message::err() is ERR__TIMED_OUT)
 	 */
-    std::unique_ptr<KafkaMessage> Consume(int timeoutMS = 0)
+    std::shared_ptr<KafkaMessage> Consume(int timeoutMS = 0)
     {
-        return std::unique_ptr<KafkaMessage>(consumer_->consume(timeoutMS));
+        return std::shared_ptr<KafkaMessage>(consumer_->consume(timeoutMS));
     }
 
     /**
