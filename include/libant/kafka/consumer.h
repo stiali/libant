@@ -86,6 +86,19 @@ public:
     }
 
     /**
+     * @brief Unsubscribe from the current subscription set.
+     */
+    KafkaErrCode Unsubscribe()
+    {
+        auto r = consumer_->unsubscribe();
+        if (r == RdKafka::ERR_NO_ERROR) {
+            return RdKafka::ERR_NO_ERROR;
+        }
+        errMsg_ = RdKafka::err2str(r);
+        return r;
+    }
+
+    /**
 	 * @brief Consume a message or error event. A corresponding callback will be triggered
      * @param timeoutMS: 0 for non-blocking, -1 for block as long as it takes to get a Message
 	 * @returns One of:
