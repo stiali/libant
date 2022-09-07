@@ -50,14 +50,14 @@ public:
     }
 
     void Get(Callback cb, const std::string& target, const std::unordered_map<std::string, std::string>* params = nullptr,
-             const std::vector<std::string>* cookies = nullptr)
+             const std::vector<std::string>* cookies = nullptr, const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr)
     {
-        request(std::move(cb), boost::beast::http::verb::get, target, params, nullptr, nullptr, cookies, nullptr);
+        request(std::move(cb), boost::beast::http::verb::get, target, params, nullptr, nullptr, cookies, additionalHeaders);
     }
 
     void Post(Callback cb, const std::string& target, const std::unordered_map<std::string, std::string>* params = nullptr,
               const std::string* contentType = nullptr, const std::string* httpBody = nullptr, const std::vector<std::string>* cookies = nullptr,
-              const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders = nullptr)
+              const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr)
     {
         request(std::move(cb), boost::beast::http::verb::post, target, params, contentType, httpBody, cookies, additionalHeaders);
     }
@@ -83,7 +83,7 @@ private:
 
         request_params(Callback cb_func, boost::beast::http::verb http_method, const std::string& http_target,
                        const std::unordered_map<std::string, std::string>* params, const std::string* http_content_type, const std::string* http_body,
-                       const std::vector<std::string>* http_cookies, const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders);
+                       const std::vector<std::string>* http_cookies, const std::unordered_map<std::string, std::string>* additionalHeaders);
 
         ~request_params()
         {
@@ -99,13 +99,13 @@ private:
         const std::string* content_type{nullptr};
         std::string* body{nullptr};
         const std::string* cookies{nullptr};
-        std::unordered_map<boost::beast::http::field, std::string>* additional_headers{nullptr};
+        std::unordered_map<std::string, std::string>* additional_headers{nullptr};
     };
 
 private:
     void request(Callback cb, boost::beast::http::verb method, const std::string& target, const std::unordered_map<std::string, std::string>* params,
                  const std::string* contentType, const std::string* httpBody, const std::vector<std::string>* cookies,
-                 const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders)
+                 const std::unordered_map<std::string, std::string>* additionalHeaders)
     {
         if (!pendingRequests_.empty()) {
             pendingRequests_.push_back(new request_params(std::move(cb), method, target, params, contentType, httpBody, cookies, additionalHeaders));
@@ -135,7 +135,7 @@ private:
 
     void do_request(boost::beast::http::verb method, const std::string& target, const std::unordered_map<std::string, std::string>* params,
                     const std::string* contentType, const std::string* httpBody, const std::vector<std::string>* cookies,
-                    const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders)
+                    const std::unordered_map<std::string, std::string>* additionalHeaders)
     {
         retriedTimes_ = 0;
         init_request(method, target, params, contentType, httpBody, cookies, additionalHeaders);
@@ -157,7 +157,7 @@ private:
 
     void init_request(boost::beast::http::verb method, const std::string& target, const std::unordered_map<std::string, std::string>* params,
                       const std::string* contentType, const std::string* httpBody, const std::vector<std::string>* cookies,
-                      const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders);
+                      const std::unordered_map<std::string, std::string>* additionalHeaders);
     void init_request(const request_params* req_params);
 
     void resolve()

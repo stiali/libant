@@ -53,7 +53,7 @@ public:
 
     void Post(uint64_t hint, BaseHttpClient::Callback cb, const std::string& target, const std::unordered_map<std::string, std::string>* params = nullptr,
               const std::string* contentType = nullptr, const std::string* httpBody = nullptr, const std::vector<std::string>* cookies = nullptr,
-              const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders = nullptr)
+              const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr)
     {
         clients_[hint % clients_.size()]->Post(std::move(cb), target, params, contentType, httpBody, cookies, additionalHeaders);
     }
@@ -66,7 +66,7 @@ public:
 
     void Post(BaseHttpClient::Callback cb, const std::string& target, const std::unordered_map<std::string, std::string>* params = nullptr,
               const std::string* contentType = nullptr, const std::string* httpBody = nullptr, const std::vector<std::string>* cookies = nullptr,
-              const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders = nullptr)
+              const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr)
     {
         Post(rand_(), std::move(cb), target, params, contentType, httpBody, cookies, additionalHeaders);
     }

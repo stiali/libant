@@ -106,7 +106,7 @@ void BaseHttpClient::on_response_read(const boost::beast::error_code& ec, size_t
 
 void BaseHttpClient::init_request(boost::beast::http::verb method, const std::string& target, const std::unordered_map<std::string, std::string>* params,
                                   const std::string* contentType, const std::string* httpBody, const std::vector<std::string>* cookies,
-                                  const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders)
+                                  const std::unordered_map<std::string, std::string>* additionalHeaders)
 {
     request_.clear();
     request_.version(11);
@@ -224,7 +224,7 @@ void BaseHttpClient::on_connect(const boost::beast::error_code& ec, const boost:
 BaseHttpClient::request_params::request_params(Callback cb_func, boost::beast::http::verb http_method, const std::string& http_target,
                                                const std::unordered_map<std::string, std::string>* params, const std::string* http_content_type,
                                                const std::string* http_body, const std::vector<std::string>* http_cookies,
-                                               const std::unordered_map<boost::beast::http::field, std::string>* additionalHeaders)
+                                               const std::unordered_map<std::string, std::string>* additionalHeaders)
     : cb(std::move(cb_func))
     , method(http_method)
     , target(http_target)
@@ -258,7 +258,7 @@ BaseHttpClient::request_params::request_params(Callback cb_func, boost::beast::h
     }
 
     if (additionalHeaders) {
-        additional_headers = new std::unordered_map<boost::beast::http::field, std::string>;
+        additional_headers = new std::unordered_map<std::string, std::string>;
         *additional_headers = *additionalHeaders;
     }
 }
