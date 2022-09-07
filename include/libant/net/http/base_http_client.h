@@ -40,6 +40,8 @@ public:
 
     virtual ~BaseHttpClient()
     {
+        Close();
+
         boost::beast::error_code ec(boost::beast::errc::operation_canceled, boost::beast::generic_category());
         for (auto p : pendingRequests_) {
             if (p->cb) {
@@ -62,6 +64,17 @@ public:
         request(std::move(cb), boost::beast::http::verb::post, target, params, contentType, httpBody, cookies, additionalHeaders);
     }
 
+    void Close()
+    {
+        if (closed_) {
+            return;
+        }
+
+        closed_ = true;
+        close();
+        resolver_.cancel();
+    }
+
 protected:
     void on_handshake(const boost::beast::error_code& ec);
     void on_request_sent(const boost::beast::error_code& ec, size_t);
@@ -73,6 +86,7 @@ private:
     virtual void handshake() = 0;
     virtual void send_request() = 0;
     virtual void read_response() = 0;
+    virtual void close() = 0;
 
 private:
     struct request_params {
@@ -128,7 +142,7 @@ private:
         pendingRequests_.pop_front();
         delete req;
 
-        if (!pendingRequests_.empty()) {
+        if (!pendingRequests_.empty() && !closed_) {
             do_request(pendingRequests_.front());
         }
     }
@@ -189,6 +203,7 @@ private:
     const std::chrono::milliseconds connectTimeout_;
     const uint16_t maxRetryTimes_;
     uint16_t retriedTimes_;
+    bool closed_;
     bool connected_;
     std::string tmpStr_;
     boost::asio::ip::tcp::resolver resolver_;

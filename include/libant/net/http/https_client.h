@@ -83,6 +83,11 @@ private:
         boost::beast::http::async_read(stream_, buffer_, response_, boost::beast::bind_front_handler(&HttpsClient::on_response_read, shared_from_this()));
     }
 
+    void close() override
+    {
+        stream_.next_layer().close();
+    }
+
 private:
     boost::asio::io_context& ioCtx_;
     boost::asio::ssl::context& sslCtx_;

@@ -1,5 +1,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/beast/version.hpp>
+#include <libant/utils/likely.h>
 #include <libant/net/http/base_http_client.h>
 
 using namespace std;
@@ -16,6 +17,7 @@ BaseHttpClient::BaseHttpClient(boost::asio::io_context& ioCtx, const std::string
     , connectTimeout_(connectTimeoutMs)
     , maxRetryTimes_(maxRetryTimes)
     , retriedTimes_(0)
+    , closed_(false)
     , connected_(false)
     , resolver_(ioCtx)
 {
@@ -35,6 +37,10 @@ BaseHttpClient::BaseHttpClient(boost::asio::io_context& ioCtx, const std::string
 
 void BaseHttpClient::on_handshake(const boost::beast::error_code& ec)
 {
+    if (unlikely(closed_)) {
+        return response(boost::beast::error_code(boost::beast::errc::operation_canceled, boost::beast::generic_category()));
+    }
+
     if (!ec) {
         connected_ = true;
         return send_request();
@@ -51,6 +57,10 @@ void BaseHttpClient::on_handshake(const boost::beast::error_code& ec)
 
 void BaseHttpClient::on_request_sent(const boost::beast::error_code& ec, size_t)
 {
+    if (unlikely(closed_)) {
+        return response(boost::beast::error_code(boost::beast::errc::operation_canceled, boost::beast::generic_category()));
+    }
+
     if (!ec) {
         return read_response();
     }
@@ -67,6 +77,10 @@ void BaseHttpClient::on_request_sent(const boost::beast::error_code& ec, size_t)
 
 void BaseHttpClient::on_response_read(const boost::beast::error_code& ec, size_t)
 {
+    if (unlikely(closed_)) {
+        return response(boost::beast::error_code(boost::beast::errc::operation_canceled, boost::beast::generic_category()));
+    }
+
     if (!ec) {
         if (!response_.keep_alive()) {
             connected_ = false;
@@ -190,6 +204,10 @@ void BaseHttpClient::init_request(const request_params* req_params)
 
 void BaseHttpClient::on_resolve(const boost::beast::error_code& ec, boost::asio::ip::tcp::resolver::results_type results)
 {
+    if (unlikely(closed_)) {
+        return response(boost::beast::error_code(boost::beast::errc::operation_canceled, boost::beast::generic_category()));
+    }
+
     if (!ec) {
         resolvedResults_ = move(results);
         return connect();
@@ -205,6 +223,10 @@ void BaseHttpClient::on_resolve(const boost::beast::error_code& ec, boost::asio:
 
 void BaseHttpClient::on_connect(const boost::beast::error_code& ec, const boost::asio::ip::tcp::resolver::results_type::endpoint_type&)
 {
+    if (unlikely(closed_)) {
+        return response(boost::beast::error_code(boost::beast::errc::operation_canceled, boost::beast::generic_category()));
+    }
+
     if (!ec) {
         return handshake();
     }

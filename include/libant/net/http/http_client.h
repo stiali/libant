@@ -69,6 +69,11 @@ private:
         boost::beast::http::async_read(stream_, buffer_, response_, boost::beast::bind_front_handler(&HttpClient::on_response_read, shared_from_this()));
     }
 
+    void close() override
+    {
+        stream_.close();
+    }
+
 private:
     boost::beast::tcp_stream stream_;
 };
