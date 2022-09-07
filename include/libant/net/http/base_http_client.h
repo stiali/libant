@@ -40,8 +40,6 @@ public:
 
     virtual ~BaseHttpClient()
     {
-        Close();
-
         boost::beast::error_code ec(boost::beast::errc::operation_canceled, boost::beast::generic_category());
         for (auto p : pendingRequests_) {
             if (p->cb) {
