@@ -34,7 +34,7 @@ class KafkaConsumer {
 public:
     ~KafkaConsumer()
     {
-        // consumer_->close(); // TODO andy: It sometimes blocks forever! Need it or not?
+        consumer_->close();
     }
 
     /**
@@ -115,7 +115,7 @@ public:
     /**
 	 * @brief Commit offset asynchronously
 	 */
-    void AsyncCommit(const std::unique_ptr<KafkaMessage>& msg)
+    void AsyncCommit(const std::shared_ptr<KafkaMessage>& msg)
     {
         consumer_->commitAsync(msg.get());
     }
