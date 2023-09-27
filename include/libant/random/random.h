@@ -60,7 +60,7 @@ std::string RandomBytes(size_t len, RandomNumberEngine& engine)
     std::string s;
     s.resize(len);
     for (size_t i = 0; i != len; ++i) {
-        s[i] = reinterpret_cast<char>(engine() % 256);
+        s[i] = static_cast<char>(engine() % 256);
     }
     return s;
 }
