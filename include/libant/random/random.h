@@ -28,7 +28,7 @@ namespace ant {
 constexpr char printableChars_[] = R"(0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~)";
 
 /**
- * Generate a random string with the given `len` and `engine`
+ * Generate a random printable string with the given `len` and `engine`
  *
  * @tparam RandomNumberEngine engine() should return an unsigned integer randomly
  * @param len length of the randomly generated string
@@ -42,6 +42,25 @@ std::string RandomString(size_t len, RandomNumberEngine& engine)
     s.resize(len);
     for (size_t i = 0; i != len; ++i) {
         s[i] = printableChars_[engine() % (sizeof(printableChars_) - 1)];
+    }
+    return s;
+}
+
+/**
+ * Generate a random binary string with the given `len` and `engine`
+ *
+ * @tparam RandomNumberEngine engine() should return an unsigned integer randomly
+ * @param len length of the randomly generated string
+ * @param engine random engine used to generate the string
+ * @return randomly generated string
+ */
+template<typename RandomNumberEngine>
+std::string RandomBytes(size_t len, RandomNumberEngine& engine)
+{
+    std::string s;
+    s.resize(len);
+    for (size_t i = 0; i != len; ++i) {
+        s[i] = reinterpret_cast<char>(engine() % 256);
     }
     return s;
 }
