@@ -23,6 +23,7 @@
 
 #include <cstring>
 #include <string>
+#include <cstdint>
 
 namespace ant {
 
